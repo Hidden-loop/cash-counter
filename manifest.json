@@ -1,0 +1,78 @@
+{
+  "name": "Financial Calculator",
+  "short_name": "Financial Calc",
+  "description": "Professional financial calculator for tracking amounts in receipts and journal entries with full logging and export",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#1e293b",
+  "categories": ["finance", "productivity"],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect fill='%231e293b' width='540' height='720'/><text x='270' y='360' font-size='120' font-weight='bold' text-anchor='middle' fill='white' font-family='monospace'>$</text></svg>",
+      "sizes": "540x720",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 720'><rect fill='%231e293b' width='1280' height='720'/><text x='640' y='360' font-size='120' font-weight='bold' text-anchor='middle' fill='white' font-family='monospace'>$</text></svg>",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "form_factor": "wide"
+    }
+  ],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%231e293b' width='192' height='192' rx='32'/><text x='96' y='120' font-size='80' font-weight='bold' text-anchor='middle' fill='white' font-family='monospace'>$</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%231e293b' width='512' height='512' rx='64'/><text x='256' y='320' font-size='200' font-weight='bold' text-anchor='middle' fill='white' font-family='monospace'>$</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Session",
+      "short_name": "New",
+      "description": "Start a new calculation session",
+      "url": "/?mode=new",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%231e293b' width='192' height='192' rx='32'/><text x='96' y='120' font-size='60' font-weight='bold' text-anchor='middle' fill='white' font-family='monospace'>+</text></svg>",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "View Log",
+      "short_name": "Log",
+      "description": "View calculation history",
+      "url": "/?view=log",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%231e293b' width='192' height='192' rx='32'/><text x='96' y='120' font-size='60' font-weight='bold' text-anchor='middle' fill='white' font-family='monospace'>📋</text></svg>",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ],
+  "share_target": {
+    "action": "/",
+    "method": "POST",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
+}
