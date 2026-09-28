@@ -200,7 +200,7 @@
         }
 
         .category-btn {
-            padding: 6px 12px;
+            padding: 6px 8px;
             border-radius: 6px;
             font-size: 12px;
             font-weight: 600;
@@ -208,12 +208,31 @@
             border: 2px solid #e5e7eb;
             background: white;
             transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .category-btn:hover {
+            border-color: #d1d5db;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .category-btn.active {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border-color: #667eea;
+        }
+
+        .category-btn button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
         }
 
         .history-entry {
@@ -424,6 +443,13 @@
             const [entryCategory, setEntryCategory] = useState('Opening Balance');
             const [entryNotes, setEntryNotes] = useState('');
             const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('All');
+            const [showCategoryEdit, setShowCategoryEdit] = useState(false);
+            const [editingCategory, setEditingCategory] = useState(null);
+            const [editingCategoryNewName, setEditingCategoryNewName] = useState('');
+            const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false);
+            const [categoryToDelete, setCategoryToDelete] = useState(null);
+            const [deleteCategoryAction, setDeleteCategoryAction] = useState('move');
+            const [moveToCategory, setMoveToCategory] = useState('');
 
             const denominations = [
                 { label: '500', value: 500, emoji: '💵' },
@@ -696,6 +722,75 @@
                         showToast('Category already exists');
                     }
                 }
+            };
+
+            const renameCategory = (oldName, newName) => {
+                if (!newName || !newName.trim()) return;
+                if (newName === oldName) {
+                    setShowCategoryEdit(false);
+                    return;
+                }
+                if (categories.includes(newName)) {
+                    showToast('Category already exists');
+                    return;
+                }
+
+                const updated = categories.map(c => c === oldName ? newName : c);
+                setCategories(updated);
+
+                const updatedProfiles = { ...profiles };
+                Object.keys(updatedProfiles).forEach(profileName => {
+                    if (updatedProfiles[profileName].logs) {
+                        updatedProfiles[profileName].logs.forEach(log => {
+                            if (log.category === oldName) {
+                                log.category = newName;
+                            }
+                        });
+                    }
+                });
+                setProfiles(updatedProfiles);
+                showToast(`Renamed "${oldName}" to "${newName}"`);
+                setShowCategoryEdit(false);
+            };
+
+            const deleteCategory = () => {
+                if (!categoryToDelete) return;
+
+                const updatedProfiles = { ...profiles };
+                let affectedCount = 0;
+
+                Object.keys(updatedProfiles).forEach(profileName => {
+                    if (updatedProfiles[profileName].logs) {
+                        updatedProfiles[profileName].logs.forEach(log => {
+                            if (log.category === categoryToDelete) {
+                                affectedCount++;
+                                if (deleteCategoryAction === 'move') {
+                                    log.category = moveToCategory;
+                                } else if (deleteCategoryAction === 'uncategorized') {
+                                    if (!categories.includes('Uncategorized')) {
+                                        setCategories([...categories, 'Uncategorized']);
+                                    }
+                                    log.category = 'Uncategorized';
+                                }
+                            }
+                        });
+                    }
+                });
+
+                if (deleteCategoryAction === 'delete') {
+                    Object.keys(updatedProfiles).forEach(profileName => {
+                        if (updatedProfiles[profileName].logs) {
+                            updatedProfiles[profileName].logs = updatedProfiles[profileName].logs.filter(log => log.category !== categoryToDelete);
+                        }
+                    });
+                }
+
+                const updatedCategories = categories.filter(c => c !== categoryToDelete);
+                setCategories(updatedCategories);
+                setProfiles(updatedProfiles);
+                showToast(`Category deleted (${affectedCount} entries ${deleteCategoryAction === 'delete' ? 'removed' : 'updated'})`);
+                setShowDeleteCategoryModal(false);
+                setCategoryToDelete(null);
             };
 
             const exportLogs = (format) => {
@@ -1161,9 +1256,33 @@
                                                     {
                                                         key: cat,
                                                         onClick: () => setSelectedCategoryFilter(cat),
-                                                        className: `category-btn text-xs ${selectedCategoryFilter === cat ? 'active' : ''}`
+                                                        className: `category-btn text-xs ${selectedCategoryFilter === cat ? 'active' : ''} relative group`
                                                     },
-                                                    cat
+                                                    React.createElement(
+                                                        'span',
+                                                        { className: 'flex items-center justify-between gap-1' },
+                                                        React.createElement('span', null, cat),
+                                                        React.createElement(
+                                                            'span',
+                                                            { className: 'flex gap-0.5' },
+                                                            React.createElement(
+                                                                'button',
+                                                                {
+                                                                    onClick: (e) => { e.stopPropagation(); setEditingCategory(cat); setEditingCategoryNewName(cat); setShowCategoryEdit(true); },
+                                                                    className: 'text-xs opacity-50 hover:opacity-100 transition-opacity p-0.5'
+                                                                },
+                                                                '✎'
+                                                            ),
+                                                            React.createElement(
+                                                                'button',
+                                                                {
+                                                                    onClick: (e) => { e.stopPropagation(); setCategoryToDelete(cat); setShowDeleteCategoryModal(true); },
+                                                                    className: 'text-xs opacity-50 hover:opacity-100 transition-opacity p-0.5'
+                                                                },
+                                                                '✕'
+                                                            )
+                                                        )
+                                                    )
                                                 )
                                             )
                                         ),
@@ -1309,6 +1428,120 @@
                                     className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-purple-500 to-indigo-600'
                                 },
                                 'Create'
+                            )
+                        )
+                    )
+                ),
+
+                // Category Edit Modal
+                showCategoryEdit && editingCategory && React.createElement(
+                    'div',
+                    { className: 'fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50' },
+                    React.createElement(
+                        'div',
+                        { className: 'glass-effect rounded-xl p-6 max-w-sm w-full' },
+                        React.createElement('h3', { className: 'text-lg font-bold text-gray-900 mb-4' }, `✎ Rename "${editingCategory}"`),
+                        React.createElement(
+                            'input',
+                            {
+                                type: 'text',
+                                value: editingCategoryNewName,
+                                onChange: (e) => setEditingCategoryNewName(e.target.value),
+                                onKeyPress: (e) => e.key === 'Enter' && renameCategory(editingCategory, editingCategoryNewName),
+                                placeholder: 'New name',
+                                autoFocus: true,
+                                className: 'modal-input'
+                            }
+                        ),
+                        React.createElement(
+                            'div',
+                            { className: 'flex gap-3 text-sm' },
+                            React.createElement(
+                                'button',
+                                {
+                                    onClick: () => { setShowCategoryEdit(false); setEditingCategory(null); setEditingCategoryNewName(''); },
+                                    className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200'
+                                },
+                                'Cancel'
+                            ),
+                            React.createElement(
+                                'button',
+                                {
+                                    onClick: () => renameCategory(editingCategory, editingCategoryNewName),
+                                    className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-purple-500 to-indigo-600'
+                                },
+                                'Rename'
+                            )
+                        )
+                    )
+                ),
+
+                // Category Delete Modal
+                showDeleteCategoryModal && categoryToDelete && React.createElement(
+                    'div',
+                    { className: 'fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50' },
+                    React.createElement(
+                        'div',
+                        { className: 'glass-effect rounded-xl p-6 max-w-sm w-full' },
+                        React.createElement('h3', { className: 'text-lg font-bold text-gray-900 mb-4' }, `Delete "${categoryToDelete}"?`),
+                        React.createElement('div', { className: 'text-sm text-gray-600 mb-4' }, 
+                            `${profiles[currentProfile]?.logs?.filter(log => log.category === categoryToDelete).length || 0} entries use this category.`
+                        ),
+                        React.createElement(
+                            'div',
+                            { className: 'space-y-3 mb-4' },
+                            React.createElement(
+                                'label',
+                                { className: 'flex items-start gap-3 cursor-pointer p-2 rounded hover:bg-gray-100' },
+                                React.createElement('input', { type: 'radio', name: 'action', checked: deleteCategoryAction === 'move', onChange: () => setDeleteCategoryAction('move') }),
+                                React.createElement('div', null,
+                                    React.createElement('div', { className: 'font-semibold text-sm' }, 'Move to category'),
+                                    deleteCategoryAction === 'move' && React.createElement(
+                                        'select',
+                                        {
+                                            value: moveToCategory,
+                                            onChange: (e) => setMoveToCategory(e.target.value),
+                                            className: 'w-full mt-2 p-2 border rounded text-sm'
+                                        },
+                                        React.createElement('option', { value: '' }, 'Select category...'),
+                                        categories.filter(c => c !== categoryToDelete).map(cat =>
+                                            React.createElement('option', { key: cat, value: cat }, cat)
+                                        )
+                                    )
+                                )
+                            ),
+                            React.createElement(
+                                'label',
+                                { className: 'flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-100' },
+                                React.createElement('input', { type: 'radio', name: 'action', checked: deleteCategoryAction === 'uncategorized', onChange: () => setDeleteCategoryAction('uncategorized') }),
+                                React.createElement('div', { className: 'font-semibold text-sm' }, 'Keep as "Uncategorized"')
+                            ),
+                            React.createElement(
+                                'label',
+                                { className: 'flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-100' },
+                                React.createElement('input', { type: 'radio', name: 'action', checked: deleteCategoryAction === 'delete', onChange: () => setDeleteCategoryAction('delete') }),
+                                React.createElement('div', { className: 'font-semibold text-sm text-red-600' }, 'Delete all entries in this category')
+                            )
+                        ),
+                        React.createElement(
+                            'div',
+                            { className: 'flex gap-3 text-sm' },
+                            React.createElement(
+                                'button',
+                                {
+                                    onClick: () => { setShowDeleteCategoryModal(false); setCategoryToDelete(null); },
+                                    className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200'
+                                },
+                                'Cancel'
+                            ),
+                            React.createElement(
+                                'button',
+                                {
+                                    onClick: deleteCategory,
+                                    disabled: deleteCategoryAction === 'move' && !moveToCategory,
+                                    className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-white bg-red-500 hover:bg-red-600 disabled:opacity-50'
+                                },
+                                'Delete'
                             )
                         )
                     )
