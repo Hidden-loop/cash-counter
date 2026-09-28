@@ -1,1600 +1,1931 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Cash Counter">
+    <meta name="theme-color" content="#8b5cf6">
+    <meta name="description" content="Modern cash counter with profiles and categories">
+    
+    <title>Cash Counter Pro</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%238b5cf6;stop-opacity:1' /><stop offset='100%' style='stop-color:%236366f1;stop-opacity:1' /></linearGradient></defs><rect fill='url(%23g)' width='192' height='192' rx='48'/><text x='96' y='120' font-size='80' font-weight='bold' text-anchor='middle' fill='white' font-family='monospace'>💰</text></svg>">
+    
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html, body, #root {
+            width: 100%;
+            height: 100%;
+        }
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <meta name="apple-mobile-web-app-title" content="Cash Counter">
-        <meta name="theme-color" content="#8b5cf6">
-        <meta name="description" content="Modern cash counter with profiles and categories">
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-        <title>Cash Counter Pro</title>
+        body.theme-slate { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        body.theme-navy { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
+        body.theme-forest { background: linear-gradient(135deg, #134e5e 0%, #71b280 100%); }
+        body.theme-minimal { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); }
 
-        <link rel="manifest" href="manifest.json">
-        <link rel="icon" type="image/png" sizes="192x192"
-            href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%238b5cf6;stop-opacity:1' /><stop offset='100%' style='stop-color:%236366f1;stop-opacity:1' /></linearGradient></defs><rect fill='url(%23g)' width='192' height='192' rx='48'/><text x='96' y='120' font-size='80' font-weight='bold' text-anchor='middle' fill='white' font-family='monospace'>💰</text></svg>">
+        input[type="number"], input[type="text"] {
+            -moz-appearance: textfield;
+        }
 
-        <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-        <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-        <script src="https://cdn.tailwindcss.com"></script>
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
 
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-                -webkit-tap-highlight-color: transparent;
-            }
+        input:focus, select:focus, textarea:focus {
+            outline: none !important;
+        }
 
-            html,
-            body,
-            #root {
-                width: 100%;
-                height: 100%;
-            }
+        button { -webkit-user-select: none; user-select: none; }
 
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-                min-height: 100vh;
-                overflow-x: hidden;
-            }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-            body.theme-slate {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
 
-            body.theme-navy {
-                background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideUp 0.3s ease-out;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
+        }
 
-            body.theme-forest {
-                background: linear-gradient(135deg, #134e5e 0%, #71b280 100%);
-            }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
 
-            body.theme-minimal {
-                background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            }
+        .hover-scale {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
 
-            input[type="number"],
-            input[type="text"] {
-                -moz-appearance: textfield;
-            }
+        .hover-scale:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
 
-            input[type="number"]::-webkit-outer-spin-button,
-            input[type="number"]::-webkit-inner-spin-button {
-                -webkit-appearance: none;
-                margin: 0;
-            }
+        .denomination-card {
+            background: white;
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+        }
 
-            input:focus,
-            select:focus,
-            textarea:focus {
-                outline: none !important;
-            }
+        .denomination-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+        }
 
-            button {
-                -webkit-user-select: none;
-                user-select: none;
-            }
+        .denomination-card.negative {
+            background: #fef2f2;
+            border-color: #fca5a5;
+        }
 
-            .gradient-text {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-            }
+        .qty-input {
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 6px;
+            width: 60px;
+            transition: border-color 0.2s;
+        }
 
-            .glass-effect {
-                background: rgba(255, 255, 255, 0.95);
-                backdrop-filter: blur(10px);
-            }
+        .qty-input:focus {
+            border-color: #667eea;
+        }
 
-            .toast {
-                position: fixed;
-                bottom: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 12px 20px;
-                border-radius: 10px;
-                font-size: 13px;
-                font-weight: 600;
-                z-index: 1000;
-                animation: slideUp 0.3s ease-out;
-                box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
-            }
+        .btn-increment {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            width: 28px;
+            height: 28px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
 
-            @keyframes slideUp {
-                from {
-                    opacity: 0;
-                    transform: translateX(-50%) translateY(20px);
-                }
+        .btn-increment:hover {
+            transform: scale(1.05);
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.35);
+        }
 
-                to {
-                    opacity: 1;
-                    transform: translateX(-50%) translateY(0);
-                }
-            }
+        .btn-increment:active {
+            transform: scale(0.95);
+        }
 
-            .hover-scale {
-                transition: transform 0.2s ease, box-shadow 0.2s ease;
-            }
+        .amount-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 15px;
+            font-weight: 700;
+        }
 
-            .hover-scale:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-            }
+        .amount-display.negative {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-            .denomination-card {
-                background: white;
-                border-radius: 10px;
-                padding: 10px 12px;
-                margin-bottom: 6px;
-                border: 2px solid transparent;
-                transition: all 0.2s ease;
-                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-            }
+        .profile-tab {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            white-space: nowrap;
+        }
 
-            .denomination-card:hover {
-                border-color: #667eea;
-                box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
-            }
+        .profile-tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+        }
 
-            .denomination-card.negative {
-                background: #fef2f2;
-                border-color: #fca5a5;
-            }
+        .profile-tab.inactive {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
 
-            .qty-input {
-                font-size: 16px;
-                font-weight: bold;
-                text-align: center;
-                border: 2px solid #e5e7eb;
-                border-radius: 6px;
-                padding: 6px;
-                width: 60px;
-                transition: border-color 0.2s;
-            }
+        .profile-tab.inactive:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
 
-            .qty-input:focus {
-                border-color: #667eea;
-            }
+        .category-btn {
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 2px solid #e5e7eb;
+            background: white;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
 
-            .btn-increment {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                border: none;
-                border-radius: 6px;
-                width: 28px;
-                height: 28px;
-                font-size: 14px;
-                font-weight: bold;
-                cursor: pointer;
-                transition: all 0.2s ease;
-            }
+        .category-btn:hover {
+            border-color: #d1d5db;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
 
-            .btn-increment:hover {
-                transform: scale(1.05);
-                box-shadow: 0 3px 10px rgba(102, 126, 234, 0.35);
-            }
+        .category-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
 
-            .btn-increment:active {
-                transform: scale(0.95);
-            }
+        .category-btn button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
 
-            .amount-display {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-                font-size: 15px;
-                font-weight: 700;
-            }
+        .history-entry {
+            background: white;
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
 
-            .amount-display.negative {
-                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-            }
+        .history-entry:hover {
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
 
-            .profile-tab {
-                padding: 8px 14px;
-                border-radius: 8px;
-                font-weight: 600;
-                font-size: 13px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                border: 2px solid transparent;
-                white-space: nowrap;
-            }
+        .history-entry.selected {
+            background: #f0f4ff;
+            border-left-color: #10b981;
+        }
 
-            .profile-tab.active {
-                background: white;
-                color: #667eea;
-                box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
-            }
+        .checkbox-custom {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #667eea;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+        }
 
-            .profile-tab.inactive {
-                background: rgba(255, 255, 255, 0.15);
-                color: white;
-            }
+        .checkbox-custom.checked {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
 
-            .profile-tab.inactive:hover {
-                background: rgba(255, 255, 255, 0.25);
-            }
+        .diff-positive {
+            color: #10b981;
+            font-weight: 600;
+            font-size: 13px;
+        }
 
-            .category-btn {
-                padding: 6px 8px;
-                border-radius: 6px;
-                font-size: 12px;
-                font-weight: 600;
-                cursor: pointer;
-                border: 2px solid #e5e7eb;
-                background: white;
-                transition: all 0.2s ease;
-                display: flex;
-                align-items: center;
-                white-space: nowrap;
-            }
+        .diff-negative {
+            color: #ef4444;
+            font-weight: 600;
+            font-size: 13px;
+        }
 
-            .category-btn:hover {
-                border-color: #d1d5db;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            }
+        .split-view {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
 
-            .category-btn.active {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                border-color: #667eea;
-            }
-
-            .category-btn button {
-                background: none;
-                border: none;
-                cursor: pointer;
-                padding: 0;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                line-height: 1;
-            }
-
-            .history-entry {
-                background: white;
-                border-radius: 10px;
-                padding: 10px 12px;
-                margin-bottom: 6px;
-                border-left: 4px solid #667eea;
-                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-                transition: all 0.2s ease;
-            }
-
-            .history-entry:hover {
-                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-            }
-
-            .history-entry.selected {
-                background: #f0f4ff;
-                border-left-color: #10b981;
-            }
-
-            .checkbox-custom {
-                width: 18px;
-                height: 18px;
-                border: 2px solid #667eea;
-                border-radius: 4px;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: white;
-            }
-
-            .checkbox-custom.checked {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-            }
-
-            .diff-positive {
-                color: #10b981;
-                font-weight: 600;
-                font-size: 13px;
-            }
-
-            .diff-negative {
-                color: #ef4444;
-                font-weight: 600;
-                font-size: 13px;
-            }
-
+        @media (max-width: 640px) {
             .split-view {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 0.75rem;
+                grid-template-columns: 1fr;
             }
+        }
 
-            @media (max-width: 640px) {
-                .split-view {
-                    grid-template-columns: 1fr;
-                }
-            }
+        .name-input-large {
+            font-size: 18px;
+            font-weight: 600;
+            padding: 10px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            width: 100%;
+            margin-bottom: 8px;
+            transition: border-color 0.2s;
+        }
 
-            .name-input-large {
-                font-size: 18px;
-                font-weight: 600;
-                padding: 10px 12px;
-                border: 2px solid #e5e7eb;
-                border-radius: 8px;
-                width: 100%;
-                margin-bottom: 8px;
-                transition: border-color 0.2s;
-            }
+        .name-input-large:focus {
+            border-color: #667eea;
+        }
 
-            .name-input-large:focus {
-                border-color: #667eea;
-            }
+        .modal-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
 
-            .modal-input {
-                width: 100%;
-                padding: 8px 12px;
-                border: 2px solid #e5e7eb;
-                border-radius: 6px;
-                font-size: 13px;
-                margin-bottom: 8px;
-            }
+        .modal-input:focus {
+            border-color: #667eea;
+        }
 
-            .modal-input:focus {
-                border-color: #667eea;
-            }
+        .modal-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
 
-            .modal-select {
-                width: 100%;
-                padding: 8px 12px;
-                border: 2px solid #e5e7eb;
-                border-radius: 6px;
-                font-size: 13px;
-                margin-bottom: 8px;
-                cursor: pointer;
-            }
+        .modal-select:focus {
+            border-color: #667eea;
+        }
 
-            .modal-select:focus {
-                border-color: #667eea;
-            }
+        @media (max-width: 640px) {
+            .qty-input { font-size: 15px; }
+            .denomination-card { padding: 8px 10px; }
+            .btn-increment { width: 26px; height: 26px; font-size: 13px; }
+            .name-input-large { font-size: 16px; }
+        }
+    </style>
+</head>
+<body class="theme-slate">
+    <div id="root"></div>
 
-            @media (max-width: 640px) {
-                .qty-input {
-                    font-size: 15px;
-                }
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        }
 
-                .denomination-card {
-                    padding: 8px 10px;
-                }
+        const StorageManager = {
+            PROFILES_KEY: 'cc_profiles',
+            CURRENT_PROFILE_KEY: 'cc_current_profile',
+            THEME_KEY: 'cc_theme',
+            CATEGORIES_KEY: 'cc_categories',
 
-                .btn-increment {
-                    width: 26px;
-                    height: 26px;
-                    font-size: 13px;
-                }
-
-                .name-input-large {
-                    font-size: 16px;
-                }
-            }
-        </style>
-    </head>
-
-    <body class="theme-slate">
-        <div id="root"></div>
-
-        <script>
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js').catch(() => { });
-            }
-
-            const StorageManager = {
-                PROFILES_KEY: 'cc_profiles',
-                CURRENT_PROFILE_KEY: 'cc_current_profile',
-                THEME_KEY: 'cc_theme',
-                CATEGORIES_KEY: 'cc_categories',
-
-                getProfiles() {
-                    try {
-                        const stored = localStorage.getItem(this.PROFILES_KEY);
-                        if (!stored) {
-                            const defaults = {
-                                'Work': { name: 'Work', logs: [] },
-                                'Personal': { name: 'Personal', logs: [] }
-                            };
-                            localStorage.setItem(this.PROFILES_KEY, JSON.stringify(defaults));
-                            return defaults;
-                        }
-                        return JSON.parse(stored);
-                    } catch (e) {
-                        return {};
+            getProfiles() {
+                try {
+                    const stored = localStorage.getItem(this.PROFILES_KEY);
+                    if (!stored) {
+                        const defaults = {
+                            'Work': { name: 'Work', logs: [] },
+                            'Personal': { name: 'Personal', logs: [] }
+                        };
+                        localStorage.setItem(this.PROFILES_KEY, JSON.stringify(defaults));
+                        return defaults;
                     }
-                },
+                    return JSON.parse(stored);
+                } catch (e) {
+                    return {};
+                }
+            },
 
-                saveProfiles(profiles) {
-                    try {
-                        localStorage.setItem(this.PROFILES_KEY, JSON.stringify(profiles));
-                    } catch (e) {
-                        console.error('Failed to save profiles:', e);
+            saveProfiles(profiles) {
+                try {
+                    localStorage.setItem(this.PROFILES_KEY, JSON.stringify(profiles));
+                } catch (e) {
+                    console.error('Failed to save profiles:', e);
+                }
+            },
+
+            getCurrentProfile() {
+                return localStorage.getItem(this.CURRENT_PROFILE_KEY) || 'Work';
+            },
+
+            setCurrentProfile(name) {
+                localStorage.setItem(this.CURRENT_PROFILE_KEY, name);
+            },
+
+            getTheme() {
+                return localStorage.getItem(this.THEME_KEY) || 'slate';
+            },
+
+            setTheme(theme) {
+                localStorage.setItem(this.THEME_KEY, theme);
+            },
+
+            getCategories() {
+                try {
+                    const stored = localStorage.getItem(this.CATEGORIES_KEY);
+                    if (!stored) {
+                        const defaults = ['Opening Balance', 'Sales', 'Refund', 'Deposit', 'Withdrawal', 'Other'];
+                        localStorage.setItem(this.CATEGORIES_KEY, JSON.stringify(defaults));
+                        return defaults;
                     }
-                },
+                    return JSON.parse(stored);
+                } catch (e) {
+                    return ['Opening Balance', 'Sales', 'Refund', 'Deposit', 'Withdrawal', 'Other'];
+                }
+            },
 
-                getCurrentProfile() {
-                    return localStorage.getItem(this.CURRENT_PROFILE_KEY) || 'Work';
-                },
+            saveCategories(categories) {
+                try {
+                    localStorage.setItem(this.CATEGORIES_KEY, JSON.stringify(categories));
+                } catch (e) {
+                    console.error('Failed to save categories:', e);
+                }
+            },
 
-                setCurrentProfile(name) {
-                    localStorage.setItem(this.CURRENT_PROFILE_KEY, name);
-                },
+            getAccountsBook() {
+                try {
+                    const stored = localStorage.getItem('cc_accounts_book');
+                    return stored ? JSON.parse(stored) : {};
+                } catch (e) {
+                    return {};
+                }
+            },
 
-                getTheme() {
-                    return localStorage.getItem(this.THEME_KEY) || 'slate';
-                },
+            saveAccountsBook(book) {
+                try {
+                    localStorage.setItem('cc_accounts_book', JSON.stringify(book));
+                } catch (e) {
+                    console.error('Failed to save accounts book:', e);
+                }
+            }
+        };
 
-                setTheme(theme) {
-                    localStorage.setItem(this.THEME_KEY, theme);
-                },
+        const { useState, useEffect } = React;
 
-                getCategories() {
-                    try {
-                        const stored = localStorage.getItem(this.CATEGORIES_KEY);
-                        if (!stored) {
-                            const defaults = ['Opening Balance', 'Sales', 'Refund', 'Deposit', 'Withdrawal', 'Other'];
-                            localStorage.setItem(this.CATEGORIES_KEY, JSON.stringify(defaults));
-                            return defaults;
-                        }
-                        return JSON.parse(stored);
-                    } catch (e) {
-                        return ['Opening Balance', 'Sales', 'Refund', 'Deposit', 'Withdrawal', 'Other'];
+        const CashCounter = () => {
+            const [profiles, setProfiles] = useState({});
+            const [currentProfile, setCurrentProfile] = useState('Work');
+            const [theme, setTheme] = useState('slate');
+            const [categories, setCategories] = useState([]);
+            const [toast, setToast] = useState('');
+            const [showNewProfileModal, setShowNewProfileModal] = useState(false);
+            const [newProfileName, setNewProfileName] = useState('');
+            const [editingLogId, setEditingLogId] = useState(null);
+            const [editQuantities, setEditQuantities] = useState({});
+            const [selectedEntries, setSelectedEntries] = useState(new Set());
+            const [multiSelectMode, setMultiSelectMode] = useState(false);
+            const [addOrSubtract, setAddOrSubtract] = useState('add');
+            const [showEntryDetailsModal, setShowEntryDetailsModal] = useState(false);
+            const [entryName, setEntryName] = useState('');
+            const [entryCategory, setEntryCategory] = useState('Opening Balance');
+            const [entryNotes, setEntryNotes] = useState('');
+            const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('All');
+            const [showCategoryEdit, setShowCategoryEdit] = useState(false);
+            const [editingCategory, setEditingCategory] = useState(null);
+            const [editingCategoryNewName, setEditingCategoryNewName] = useState('');
+            const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false);
+            const [categoryToDelete, setCategoryToDelete] = useState(null);
+            const [deleteCategoryAction, setDeleteCategoryAction] = useState('move');
+            const [moveToCategory, setMoveToCategory] = useState('');
+            const [showAccountsBook, setShowAccountsBook] = useState(false);
+            const [accountsBook, setAccountsBook] = useState([]);
+            const [newAccountEntry, setNewAccountEntry] = useState({ type: 'debit', amount: '', description: '', date: new Date().toISOString().split('T')[0] });
+            const [showImportModal, setShowImportModal] = useState(false);
+
+            const denominations = [
+                { label: '500', value: 500, emoji: '💵' },
+                { label: '200', value: 200, emoji: '💵' },
+                { label: '100', value: 100, emoji: '💵' },
+                { label: '50', value: 50, emoji: '💵' },
+                { label: '20', value: 20, emoji: '💴' },
+                { label: '10', value: 10, emoji: '🪙' },
+                { label: '5', value: 5, emoji: '🪙' },
+                { label: '2', value: 2, emoji: '🪙' },
+                { label: '1', value: 1, emoji: '🪙' },
+            ];
+
+            const [quantities, setQuantities] = useState(
+                denominations.reduce((acc, d) => ({...acc, [d.value]: ''}), {})
+            );
+
+            useEffect(() => {
+                const savedProfiles = StorageManager.getProfiles();
+                const savedCurrentProfile = StorageManager.getCurrentProfile();
+                const savedTheme = StorageManager.getTheme();
+                const savedCategories = StorageManager.getCategories();
+                setProfiles(savedProfiles);
+                setCurrentProfile(savedCurrentProfile);
+                setTheme(savedTheme);
+                setCategories(savedCategories);
+                setEntryCategory(savedCategories[0] || 'Opening Balance');
+                document.body.className = `theme-${savedTheme}`;
+            }, []);
+
+            useEffect(() => {
+                StorageManager.saveProfiles(profiles);
+            }, [profiles]);
+
+            useEffect(() => {
+                StorageManager.setCurrentProfile(currentProfile);
+            }, [currentProfile]);
+
+            useEffect(() => {
+                StorageManager.setTheme(theme);
+                document.body.className = `theme-${theme}`;
+            }, [theme]);
+
+            useEffect(() => {
+                StorageManager.saveCategories(categories);
+            }, [categories]);
+
+            useEffect(() => {
+                const allBooks = StorageManager.getAccountsBook();
+                setAccountsBook(allBooks[currentProfile] || []);
+            }, [currentProfile]);
+
+            useEffect(() => {
+                const allBooks = StorageManager.getAccountsBook();
+                allBooks[currentProfile] = accountsBook;
+                StorageManager.saveAccountsBook(allBooks);
+            }, [accountsBook, currentProfile]);
+
+            const showToast = (message) => {
+                setToast(message);
+                setTimeout(() => setToast(''), 2000);
+            };
+
+            const calculateTotal = (qty = quantities) => {
+                return denominations.reduce((sum, denom) => {
+                    const q = parseInt(qty[denom.value]) || 0;
+                    return sum + (q * denom.value);
+                }, 0);
+            };
+
+            const currentTotal = calculateTotal();
+
+            const saveCount = () => {
+                const hasAnyQuantity = Object.values(quantities).some(q => q !== '');
+                if (!hasAnyQuantity) {
+                    showToast('Enter at least one quantity');
+                    return;
+                }
+
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit'
+                });
+
+                const entry = {
+                    id: Date.now(),
+                    timestamp: now.toISOString(),
+                    timeString,
+                    total: currentTotal,
+                    counts: { ...quantities },
+                    name: entryName || 'Unnamed',
+                    category: entryCategory,
+                    notes: entryNotes
+                };
+
+                setProfiles(prev => ({
+                    ...prev,
+                    [currentProfile]: {
+                        ...prev[currentProfile],
+                        logs: [...(prev[currentProfile]?.logs || []), entry]
                     }
-                },
+                }));
 
-                saveCategories(categories) {
-                    try {
-                        localStorage.setItem(this.CATEGORIES_KEY, JSON.stringify(categories));
-                    } catch (e) {
-                        console.error('Failed to save categories:', e);
+                setQuantities(denominations.reduce((acc, d) => ({...acc, [d.value]: ''}), {}));
+                setEntryName('');
+                setEntryNotes('');
+                setEntryCategory(categories[0] || 'Opening Balance');
+                showToast('Count saved! 🎉');
+            };
+
+            const openEditEntry = (logEntry) => {
+                setEditingLogId(logEntry.id);
+                setEditQuantities({ ...logEntry.counts });
+                setEntryName(logEntry.name || '');
+                setEntryNotes(logEntry.notes || '');
+                setEntryCategory(logEntry.category || categories[0]);
+            };
+
+            const saveEditedEntry = () => {
+                const newTotal = calculateTotal(editQuantities);
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit'
+                });
+
+                const editedEntry = {
+                    id: Date.now(),
+                    timestamp: now.toISOString(),
+                    timeString,
+                    total: newTotal,
+                    counts: editQuantities,
+                    name: entryName || 'Unnamed (Edit)',
+                    category: entryCategory,
+                    notes: entryNotes,
+                    editedFromId: editingLogId,
+                    editedAt: timeString
+                };
+
+                setProfiles(prev => ({
+                    ...prev,
+                    [currentProfile]: {
+                        ...prev[currentProfile],
+                        logs: [...prev[currentProfile].logs, editedEntry]
+                    }
+                }));
+
+                setEditingLogId(null);
+                setEditQuantities({});
+                setEntryName('');
+                setEntryNotes('');
+                setEntryCategory(categories[0] || 'Opening Balance');
+                showToast('Entry created from edit! ✨');
+            };
+
+            const cancelEdit = () => {
+                setEditingLogId(null);
+                setEditQuantities({});
+                setEntryName('');
+                setEntryNotes('');
+                setEntryCategory(categories[0] || 'Opening Balance');
+            };
+
+            const deleteLog = (logId) => {
+                setProfiles(prev => ({
+                    ...prev,
+                    [currentProfile]: {
+                        ...prev[currentProfile],
+                        logs: prev[currentProfile].logs.filter(log => log.id !== logId)
+                    }
+                }));
+                showToast('Entry deleted');
+            };
+
+            const toggleSelectEntry = (logId) => {
+                const newSelected = new Set(selectedEntries);
+                if (newSelected.has(logId)) {
+                    newSelected.delete(logId);
+                } else {
+                    newSelected.add(logId);
+                }
+                setSelectedEntries(newSelected);
+            };
+
+            const applyMultiSelectOperation = () => {
+                if (selectedEntries.size === 0) {
+                    showToast('Select entries first');
+                    return;
+                }
+
+                const currentProfileData = profiles[currentProfile] || { logs: [] };
+                const selectedLogs = currentProfileData.logs.filter(log => selectedEntries.has(log.id));
+                
+                const combined = denominations.reduce((acc, d) => ({...acc, [d.value]: 0}), {});
+                
+                selectedLogs.forEach(log => {
+                    denominations.forEach(d => {
+                        combined[d.value] += parseInt(log.counts[d.value]) || 0;
+                    });
+                });
+
+                if (addOrSubtract === 'add') {
+                    setQuantities(prev => {
+                        const result = {...prev};
+                        denominations.forEach(d => {
+                            result[d.value] = ((parseInt(prev[d.value]) || 0) + combined[d.value]).toString();
+                        });
+                        return result;
+                    });
+                    showToast(`Added ${selectedEntries.size} entries`);
+                } else {
+                    setQuantities(prev => {
+                        const result = {...prev};
+                        denominations.forEach(d => {
+                            result[d.value] = ((parseInt(prev[d.value]) || 0) - combined[d.value]).toString();
+                        });
+                        return result;
+                    });
+                    showToast(`Subtracted ${selectedEntries.size} entries`);
+                }
+
+                setSelectedEntries(new Set());
+                setMultiSelectMode(false);
+            };
+
+            const createProfile = () => {
+                if (!newProfileName.trim()) {
+                    showToast('Enter profile name');
+                    return;
+                }
+
+                if (profiles[newProfileName]) {
+                    showToast('Profile already exists');
+                    return;
+                }
+
+                setProfiles(prev => ({
+                    ...prev,
+                    [newProfileName]: { name: newProfileName, logs: [] }
+                }));
+
+                setCurrentProfile(newProfileName);
+                setNewProfileName('');
+                setShowNewProfileModal(false);
+                showToast(`✨ Profile created`);
+            };
+
+            const deleteProfile = (profileName) => {
+                if (Object.keys(profiles).length === 1) {
+                    showToast('Cannot delete last profile');
+                    return;
+                }
+
+                if (confirm(`Delete profile "${profileName}"?`)) {
+                    setProfiles(prev => {
+                        const newProfiles = { ...prev };
+                        delete newProfiles[profileName];
+                        return newProfiles;
+                    });
+
+                    if (currentProfile === profileName) {
+                        const remainingProfiles = Object.keys(profiles).filter(p => p !== profileName);
+                        setCurrentProfile(remainingProfiles[0]);
+                    }
+
+                    showToast(`Profile deleted`);
+                }
+            };
+
+            const addNewCategory = () => {
+                const newCat = prompt('Enter new category name:');
+                if (newCat && newCat.trim()) {
+                    if (!categories.includes(newCat)) {
+                        const updated = [...categories, newCat.trim()];
+                        setCategories(updated);
+                        showToast('Category added');
+                    } else {
+                        showToast('Category already exists');
                     }
                 }
             };
 
-            const { useState, useEffect } = React;
-
-            const CashCounter = () => {
-                const [profiles, setProfiles] = useState({});
-                const [currentProfile, setCurrentProfile] = useState('Work');
-                const [theme, setTheme] = useState('slate');
-                const [categories, setCategories] = useState([]);
-                const [toast, setToast] = useState('');
-                const [showNewProfileModal, setShowNewProfileModal] = useState(false);
-                const [newProfileName, setNewProfileName] = useState('');
-                const [editingLogId, setEditingLogId] = useState(null);
-                const [editQuantities, setEditQuantities] = useState({});
-                const [selectedEntries, setSelectedEntries] = useState(new Set());
-                const [multiSelectMode, setMultiSelectMode] = useState(false);
-                const [addOrSubtract, setAddOrSubtract] = useState('add');
-                const [showEntryDetailsModal, setShowEntryDetailsModal] = useState(false);
-                const [entryName, setEntryName] = useState('');
-                const [entryCategory, setEntryCategory] = useState('Opening Balance');
-                const [entryNotes, setEntryNotes] = useState('');
-                const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('All');
-                const [showCategoryEdit, setShowCategoryEdit] = useState(false);
-                const [editingCategory, setEditingCategory] = useState(null);
-                const [editingCategoryNewName, setEditingCategoryNewName] = useState('');
-                const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false);
-                const [categoryToDelete, setCategoryToDelete] = useState(null);
-                const [deleteCategoryAction, setDeleteCategoryAction] = useState('move');
-                const [moveToCategory, setMoveToCategory] = useState('');
-
-                const denominations = [
-                    { label: '500', value: 500, emoji: '💵' },
-                    { label: '200', value: 200, emoji: '💵' },
-                    { label: '100', value: 100, emoji: '💵' },
-                    { label: '50', value: 50, emoji: '💵' },
-                    { label: '20', value: 20, emoji: '💴' },
-                    { label: '10', value: 10, emoji: '🪙' },
-                    { label: '5', value: 5, emoji: '🪙' },
-                    { label: '2', value: 2, emoji: '🪙' },
-                    { label: '1', value: 1, emoji: '🪙' },
-                ];
-
-                const [quantities, setQuantities] = useState(
-                    denominations.reduce((acc, d) => ({ ...acc, [d.value]: '' }), {})
-                );
-
-                useEffect(() => {
-                    const savedProfiles = StorageManager.getProfiles();
-                    const savedCurrentProfile = StorageManager.getCurrentProfile();
-                    const savedTheme = StorageManager.getTheme();
-                    const savedCategories = StorageManager.getCategories();
-                    setProfiles(savedProfiles);
-                    setCurrentProfile(savedCurrentProfile);
-                    setTheme(savedTheme);
-                    setCategories(savedCategories);
-                    setEntryCategory(savedCategories[0] || 'Opening Balance');
-                    document.body.className = `theme-${savedTheme}`;
-                }, []);
-
-                useEffect(() => {
-                    StorageManager.saveProfiles(profiles);
-                }, [profiles]);
-
-                useEffect(() => {
-                    StorageManager.setCurrentProfile(currentProfile);
-                }, [currentProfile]);
-
-                useEffect(() => {
-                    StorageManager.setTheme(theme);
-                    document.body.className = `theme-${theme}`;
-                }, [theme]);
-
-                useEffect(() => {
-                    StorageManager.saveCategories(categories);
-                }, [categories]);
-
-                const showToast = (message) => {
-                    setToast(message);
-                    setTimeout(() => setToast(''), 2000);
-                };
-
-                const calculateTotal = (qty = quantities) => {
-                    return denominations.reduce((sum, denom) => {
-                        const q = parseInt(qty[denom.value]) || 0;
-                        return sum + (q * denom.value);
-                    }, 0);
-                };
-
-                const currentTotal = calculateTotal();
-
-                const saveCount = () => {
-                    const hasAnyQuantity = Object.values(quantities).some(q => q !== '');
-                    if (!hasAnyQuantity) {
-                        showToast('Enter at least one quantity');
-                        return;
-                    }
-
-                    const now = new Date();
-                    const timeString = now.toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit'
-                    });
-
-                    const entry = {
-                        id: Date.now(),
-                        timestamp: now.toISOString(),
-                        timeString,
-                        total: currentTotal,
-                        counts: { ...quantities },
-                        name: entryName || 'Unnamed',
-                        category: entryCategory,
-                        notes: entryNotes
-                    };
-
-                    setProfiles(prev => ({
-                        ...prev,
-                        [currentProfile]: {
-                            ...prev[currentProfile],
-                            logs: [...(prev[currentProfile]?.logs || []), entry]
-                        }
-                    }));
-
-                    setQuantities(denominations.reduce((acc, d) => ({ ...acc, [d.value]: '' }), {}));
-                    setEntryName('');
-                    setEntryNotes('');
-                    setEntryCategory(categories[0] || 'Opening Balance');
-                    showToast('Count saved! 🎉');
-                };
-
-                const openEditEntry = (logEntry) => {
-                    setEditingLogId(logEntry.id);
-                    setEditQuantities({ ...logEntry.counts });
-                    setEntryName(logEntry.name || '');
-                    setEntryNotes(logEntry.notes || '');
-                    setEntryCategory(logEntry.category || categories[0]);
-                };
-
-                const saveEditedEntry = () => {
-                    const newTotal = calculateTotal(editQuantities);
-                    const now = new Date();
-                    const timeString = now.toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit'
-                    });
-
-                    const editedEntry = {
-                        id: Date.now(),
-                        timestamp: now.toISOString(),
-                        timeString,
-                        total: newTotal,
-                        counts: editQuantities,
-                        name: entryName || 'Unnamed (Edit)',
-                        category: entryCategory,
-                        notes: entryNotes,
-                        editedFromId: editingLogId,
-                        editedAt: timeString
-                    };
-
-                    setProfiles(prev => ({
-                        ...prev,
-                        [currentProfile]: {
-                            ...prev[currentProfile],
-                            logs: [...prev[currentProfile].logs, editedEntry]
-                        }
-                    }));
-
-                    setEditingLogId(null);
-                    setEditQuantities({});
-                    setEntryName('');
-                    setEntryNotes('');
-                    setEntryCategory(categories[0] || 'Opening Balance');
-                    showToast('Entry created from edit! ✨');
-                };
-
-                const cancelEdit = () => {
-                    setEditingLogId(null);
-                    setEditQuantities({});
-                    setEntryName('');
-                    setEntryNotes('');
-                    setEntryCategory(categories[0] || 'Opening Balance');
-                };
-
-                const deleteLog = (logId) => {
-                    setProfiles(prev => ({
-                        ...prev,
-                        [currentProfile]: {
-                            ...prev[currentProfile],
-                            logs: prev[currentProfile].logs.filter(log => log.id !== logId)
-                        }
-                    }));
-                    showToast('Entry deleted');
-                };
-
-                const toggleSelectEntry = (logId) => {
-                    const newSelected = new Set(selectedEntries);
-                    if (newSelected.has(logId)) {
-                        newSelected.delete(logId);
-                    } else {
-                        newSelected.add(logId);
-                    }
-                    setSelectedEntries(newSelected);
-                };
-
-                const applyMultiSelectOperation = () => {
-                    if (selectedEntries.size === 0) {
-                        showToast('Select entries first');
-                        return;
-                    }
-
-                    const currentProfileData = profiles[currentProfile] || { logs: [] };
-                    const selectedLogs = currentProfileData.logs.filter(log => selectedEntries.has(log.id));
-
-                    const combined = denominations.reduce((acc, d) => ({ ...acc, [d.value]: 0 }), {});
-
-                    selectedLogs.forEach(log => {
-                        denominations.forEach(d => {
-                            combined[d.value] += parseInt(log.counts[d.value]) || 0;
-                        });
-                    });
-
-                    if (addOrSubtract === 'add') {
-                        setQuantities(prev => {
-                            const result = { ...prev };
-                            denominations.forEach(d => {
-                                result[d.value] = ((parseInt(prev[d.value]) || 0) + combined[d.value]).toString();
-                            });
-                            return result;
-                        });
-                        showToast(`Added ${selectedEntries.size} entries`);
-                    } else {
-                        setQuantities(prev => {
-                            const result = { ...prev };
-                            denominations.forEach(d => {
-                                result[d.value] = ((parseInt(prev[d.value]) || 0) - combined[d.value]).toString();
-                            });
-                            return result;
-                        });
-                        showToast(`Subtracted ${selectedEntries.size} entries`);
-                    }
-
-                    setSelectedEntries(new Set());
-                    setMultiSelectMode(false);
-                };
-
-                const createProfile = () => {
-                    if (!newProfileName.trim()) {
-                        showToast('Enter profile name');
-                        return;
-                    }
-
-                    if (profiles[newProfileName]) {
-                        showToast('Profile already exists');
-                        return;
-                    }
-
-                    setProfiles(prev => ({
-                        ...prev,
-                        [newProfileName]: { name: newProfileName, logs: [] }
-                    }));
-
-                    setCurrentProfile(newProfileName);
-                    setNewProfileName('');
-                    setShowNewProfileModal(false);
-                    showToast(`✨ Profile created`);
-                };
-
-                const deleteProfile = (profileName) => {
-                    if (Object.keys(profiles).length === 1) {
-                        showToast('Cannot delete last profile');
-                        return;
-                    }
-
-                    if (confirm(`Delete profile "${profileName}"?`)) {
-                        setProfiles(prev => {
-                            const newProfiles = { ...prev };
-                            delete newProfiles[profileName];
-                            return newProfiles;
-                        });
-
-                        if (currentProfile === profileName) {
-                            const remainingProfiles = Object.keys(profiles).filter(p => p !== profileName);
-                            setCurrentProfile(remainingProfiles[0]);
-                        }
-
-                        showToast(`Profile deleted`);
-                    }
-                };
-
-                const addNewCategory = () => {
-                    const newCat = prompt('Enter new category name:');
-                    if (newCat && newCat.trim()) {
-                        if (!categories.includes(newCat)) {
-                            const updated = [...categories, newCat.trim()];
-                            setCategories(updated);
-                            showToast('Category added');
-                        } else {
-                            showToast('Category already exists');
-                        }
-                    }
-                };
-
-                const renameCategory = (oldName, newName) => {
-                    if (!newName || !newName.trim()) return;
-                    if (newName === oldName) {
-                        setShowCategoryEdit(false);
-                        return;
-                    }
-                    if (categories.includes(newName)) {
-                        showToast('Category already exists');
-                        return;
-                    }
-
-                    const updated = categories.map(c => c === oldName ? newName : c);
-                    setCategories(updated);
-
-                    const updatedProfiles = { ...profiles };
-                    Object.keys(updatedProfiles).forEach(profileName => {
-                        if (updatedProfiles[profileName].logs) {
-                            updatedProfiles[profileName].logs.forEach(log => {
-                                if (log.category === oldName) {
-                                    log.category = newName;
-                                }
-                            });
-                        }
-                    });
-                    setProfiles(updatedProfiles);
-                    showToast(`Renamed "${oldName}" to "${newName}"`);
+            const renameCategory = (oldName, newName) => {
+                if (!newName || !newName.trim()) return;
+                if (newName === oldName) {
                     setShowCategoryEdit(false);
-                };
+                    return;
+                }
+                if (categories.includes(newName)) {
+                    showToast('Category already exists');
+                    return;
+                }
 
-                const deleteCategory = () => {
-                    if (!categoryToDelete) return;
+                const updated = categories.map(c => c === oldName ? newName : c);
+                setCategories(updated);
 
-                    const updatedProfiles = { ...profiles };
-                    let affectedCount = 0;
-
-                    Object.keys(updatedProfiles).forEach(profileName => {
-                        if (updatedProfiles[profileName].logs) {
-                            updatedProfiles[profileName].logs.forEach(log => {
-                                if (log.category === categoryToDelete) {
-                                    affectedCount++;
-                                    if (deleteCategoryAction === 'move') {
-                                        log.category = moveToCategory;
-                                    } else if (deleteCategoryAction === 'uncategorized') {
-                                        if (!categories.includes('Uncategorized')) {
-                                            setCategories([...categories, 'Uncategorized']);
-                                        }
-                                        log.category = 'Uncategorized';
-                                    }
-                                }
-                            });
-                        }
-                    });
-
-                    if (deleteCategoryAction === 'delete') {
-                        Object.keys(updatedProfiles).forEach(profileName => {
-                            if (updatedProfiles[profileName].logs) {
-                                updatedProfiles[profileName].logs = updatedProfiles[profileName].logs.filter(log => log.category !== categoryToDelete);
+                const updatedProfiles = { ...profiles };
+                Object.keys(updatedProfiles).forEach(profileName => {
+                    if (updatedProfiles[profileName].logs) {
+                        updatedProfiles[profileName].logs.forEach(log => {
+                            if (log.category === oldName) {
+                                log.category = newName;
                             }
                         });
                     }
+                });
+                setProfiles(updatedProfiles);
+                showToast(`Renamed "${oldName}" to "${newName}"`);
+                setShowCategoryEdit(false);
+            };
 
-                    const updatedCategories = categories.filter(c => c !== categoryToDelete);
-                    setCategories(updatedCategories);
-                    setProfiles(updatedProfiles);
-                    showToast(`Category deleted (${affectedCount} entries ${deleteCategoryAction === 'delete' ? 'removed' : 'updated'})`);
-                    setShowDeleteCategoryModal(false);
-                    setCategoryToDelete(null);
-                };
+            const deleteCategory = () => {
+                if (!categoryToDelete) return;
 
-                const exportLogs = (format) => {
-                    const profile = profiles[currentProfile];
-                    if (!profile?.logs || profile.logs.length === 0) {
-                        showToast('No entries to export');
-                        return;
-                    }
+                const updatedProfiles = { ...profiles };
+                let affectedCount = 0;
 
-                    let content = '';
-                    let filename = `${currentProfile}_${new Date().toISOString().split('T')[0]}`;
-
-                    if (format === 'csv') {
-                        content = 'Timestamp,Name,Category,Notes,Total,' + denominations.map(d => `"${d.label}"`).join(',') + '\n';
-                        profile.logs.forEach(log => {
-                            const counts = denominations.map(d => log.counts[d.value] || '0').join(',');
-                            content += `"${log.timeString}","${log.name || ''}","${log.category || ''}","${(log.notes || '').replace(/"/g, '""')}",${log.total},${counts}\n`;
+                Object.keys(updatedProfiles).forEach(profileName => {
+                    if (updatedProfiles[profileName].logs) {
+                        updatedProfiles[profileName].logs.forEach(log => {
+                            if (log.category === categoryToDelete) {
+                                affectedCount++;
+                                if (deleteCategoryAction === 'move') {
+                                    log.category = moveToCategory;
+                                } else if (deleteCategoryAction === 'uncategorized') {
+                                    if (!categories.includes('Uncategorized')) {
+                                        setCategories([...categories, 'Uncategorized']);
+                                    }
+                                    log.category = 'Uncategorized';
+                                }
+                            }
                         });
-                        filename += '.csv';
-                    } else {
-                        const exportData = {
-                            profile: currentProfile,
-                            exportDate: new Date().toISOString(),
-                            entries: profile.logs.map(log => ({
-                                timestamp: log.timeString,
-                                name: log.name,
-                                category: log.category,
-                                notes: log.notes,
-                                total: log.total,
-                                counts: denominations.reduce((acc, d) => ({
-                                    ...acc,
-                                    [d.label]: log.counts[d.value] || 0
-                                }), {})
-                            }))
-                        };
-                        content = JSON.stringify(exportData, null, 2);
-                        filename += '.json';
                     }
+                });
 
-                    const blob = new Blob([content], { type: 'text/plain' });
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = filename;
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                    showToast(`Exported as ${format.toUpperCase()}`);
-                };
-
-                const profileList = Object.keys(profiles);
-                const currentProfileData = profiles[currentProfile] || { logs: [] };
-                const editingLog = editingLogId ? currentProfileData.logs.find(l => l.id === editingLogId) : null;
-
-                let filteredLogs = currentProfileData.logs;
-                if (selectedCategoryFilter !== 'All') {
-                    filteredLogs = filteredLogs.filter(log => log.category === selectedCategoryFilter);
+                if (deleteCategoryAction === 'delete') {
+                    Object.keys(updatedProfiles).forEach(profileName => {
+                        if (updatedProfiles[profileName].logs) {
+                            updatedProfiles[profileName].logs = updatedProfiles[profileName].logs.filter(log => log.category !== categoryToDelete);
+                        }
+                    });
                 }
 
-                return React.createElement(
-                    'div',
-                    { className: 'min-h-screen' },
-                    React.createElement('div', { className: 'fixed inset-0 -z-10' }),
+                const updatedCategories = categories.filter(c => c !== categoryToDelete);
+                setCategories(updatedCategories);
+                setProfiles(updatedProfiles);
+                showToast(`Category deleted (${affectedCount} entries ${deleteCategoryAction === 'delete' ? 'removed' : 'updated'})`);
+                setShowDeleteCategoryModal(false);
+                setCategoryToDelete(null);
+            };
 
+            const addAccountsBookEntry = () => {
+                if (!newAccountEntry.amount || isNaN(newAccountEntry.amount)) {
+                    showToast('Please enter a valid amount');
+                    return;
+                }
+
+                const entry = {
+                    id: Date.now(),
+                    type: newAccountEntry.type,
+                    amount: parseFloat(newAccountEntry.amount),
+                    description: newAccountEntry.description || 'N/A',
+                    date: newAccountEntry.date,
+                    timestamp: new Date().toISOString()
+                };
+
+                setAccountsBook([...accountsBook, entry]);
+                setNewAccountEntry({ type: 'debit', amount: '', description: '', date: new Date().toISOString().split('T')[0] });
+                showToast(`${entry.type.charAt(0).toUpperCase() + entry.type.slice(1)} entry added`);
+            };
+
+            const deleteAccountsBookEntry = (id) => {
+                setAccountsBook(accountsBook.filter(e => e.id !== id));
+                showToast('Entry deleted');
+            };
+
+            const getAccountsBookTotals = () => {
+                const debits = accountsBook.filter(e => e.type === 'debit').reduce((sum, e) => sum + e.amount, 0);
+                const credits = accountsBook.filter(e => e.type === 'credit').reduce((sum, e) => sum + e.amount, 0);
+                const net = debits - credits;
+                return { debits, credits, net };
+            };
+
+            const handleImportFile = (event) => {
+                const file = event.target.files?.[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const content = e.target?.result;
+                        const isJson = file.name.endsWith('.json');
+                        const isCsv = file.name.endsWith('.csv');
+
+                        if (!isJson && !isCsv) {
+                            showToast('Please select a CSV or JSON file');
+                            return;
+                        }
+
+                        let entries = [];
+
+                        if (isJson) {
+                            const data = JSON.parse(content);
+                            entries = data.entries || [];
+                        } else if (isCsv) {
+                            const lines = content.split('\n');
+                            const headers = lines[0].split(',');
+                            const denominationIndices = {};
+                            denominations.forEach((d, i) => {
+                                const headerIdx = headers.findIndex(h => h.includes(d.label));
+                                if (headerIdx !== -1) denominationIndices[d.value] = headerIdx;
+                            });
+
+                            for (let i = 1; i < lines.length; i++) {
+                                if (!lines[i].trim()) continue;
+                                const values = lines[i].split(',').map(v => v.replace(/"/g, ''));
+                                const counts = {};
+                                Object.entries(denominationIndices).forEach(([denom, idx]) => {
+                                    counts[denom] = parseInt(values[idx]) || 0;
+                                });
+
+                                entries.push({
+                                    id: Date.now() + i,
+                                    timestamp: values[0],
+                                    timeString: values[0],
+                                    name: values[1] || '',
+                                    category: values[2] || 'Opening Balance',
+                                    notes: values[3] || '',
+                                    total: parseInt(values[4]) || 0,
+                                    counts: counts
+                                });
+                            }
+                        }
+
+                        if (entries.length === 0) {
+                            showToast('No entries found in file');
+                            return;
+                        }
+
+                        const updatedProfile = { ...profiles[currentProfile], logs: [...(profiles[currentProfile]?.logs || []), ...entries] };
+                        setProfiles({ ...profiles, [currentProfile]: updatedProfile });
+                        showToast(`Imported ${entries.length} entries`);
+                        setShowImportModal(false);
+                    } catch (err) {
+                        showToast('Error importing file: ' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+
+            const exportAccountsBook = (format) => {
+                if (accountsBook.length === 0) {
+                    showToast('No accounts book entries to export');
+                    return;
+                }
+
+                let content = '';
+                let filename = `${currentProfile}_accounts_${new Date().toISOString().split('T')[0]}`;
+
+                if (format === 'csv') {
+                    content = 'Date,Type,Amount,Description\n';
+                    accountsBook.forEach(entry => {
+                        content += `"${entry.date}","${entry.type}",${entry.amount},"${entry.description.replace(/"/g, '""')}"\n`;
+                    });
+                    filename += '.csv';
+                } else {
+                    const totals = getAccountsBookTotals();
+                    const exportData = {
+                        profile: currentProfile,
+                        exportDate: new Date().toISOString(),
+                        entries: accountsBook,
+                        summary: { debits: totals.debits, credits: totals.credits, net: totals.net }
+                    };
+                    content = JSON.stringify(exportData, null, 2);
+                    filename += '.json';
+                }
+
+                const blob = new Blob([content], { type: format === 'csv' ? 'text/csv' : 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('Exported successfully');
+            };
+
+            const exportLogs = (format) => {
+                const profile = profiles[currentProfile];
+                if (!profile?.logs || profile.logs.length === 0) {
+                    showToast('No entries to export');
+                    return;
+                }
+
+                let content = '';
+                let filename = `${currentProfile}_${new Date().toISOString().split('T')[0]}`;
+
+                if (format === 'csv') {
+                    content = 'Timestamp,Name,Category,Notes,Total,' + denominations.map(d => `"${d.label}"`).join(',') + '\n';
+                    profile.logs.forEach(log => {
+                        const counts = denominations.map(d => log.counts[d.value] || '0').join(',');
+                        content += `"${log.timeString}","${log.name || ''}","${log.category || ''}","${(log.notes || '').replace(/"/g, '""')}",${log.total},${counts}\n`;
+                    });
+                    filename += '.csv';
+                } else {
+                    const exportData = {
+                        profile: currentProfile,
+                        exportDate: new Date().toISOString(),
+                        entries: profile.logs.map(log => ({
+                            timestamp: log.timeString,
+                            name: log.name,
+                            category: log.category,
+                            notes: log.notes,
+                            total: log.total,
+                            counts: denominations.reduce((acc, d) => ({
+                                ...acc,
+                                [d.label]: log.counts[d.value] || 0
+                            }), {})
+                        }))
+                    };
+                    content = JSON.stringify(exportData, null, 2);
+                    filename += '.json';
+                }
+
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                showToast(`Exported as ${format.toUpperCase()}`);
+            };
+
+            const profileList = Object.keys(profiles);
+            const currentProfileData = profiles[currentProfile] || { logs: [] };
+            const editingLog = editingLogId ? currentProfileData.logs.find(l => l.id === editingLogId) : null;
+            
+            let filteredLogs = currentProfileData.logs;
+            if (selectedCategoryFilter !== 'All') {
+                filteredLogs = filteredLogs.filter(log => log.category === selectedCategoryFilter);
+            }
+
+            return React.createElement(
+                'div',
+                { className: 'min-h-screen' },
+                React.createElement('div', { className: 'fixed inset-0 -z-10' }),
+
+                React.createElement(
+                    'div',
+                    { className: 'p-3 md:p-6 pb-20' },
                     React.createElement(
                         'div',
-                        { className: 'p-3 md:p-6 pb-20' },
+                        { className: 'max-w-6xl mx-auto' },
+                        // Header
                         React.createElement(
                             'div',
-                            { className: 'max-w-6xl mx-auto' },
-                            // Header
+                            { className: 'mb-4 md:mb-6' },
                             React.createElement(
                                 'div',
-                                { className: 'mb-4 md:mb-6' },
-                                React.createElement(
-                                    'div',
-                                    { className: 'flex justify-between items-start gap-3 mb-4' },
-                                    React.createElement('h1', { className: 'text-3xl md:text-4xl font-bold text-white' }, '💰 Cash Counter Pro'),
-                                    React.createElement(
-                                        'select',
-                                        {
-                                            value: theme,
-                                            onChange: (e) => setTheme(e.target.value),
-                                            className: 'px-3 py-1 rounded-lg bg-white/20 text-white text-xs md:text-sm font-medium border border-white/30 cursor-pointer'
-                                        },
-                                        React.createElement('option', { value: 'slate' }, 'Slate'),
-                                        React.createElement('option', { value: 'navy' }, 'Navy'),
-                                        React.createElement('option', { value: 'forest' }, 'Forest'),
-                                        React.createElement('option', { value: 'minimal' }, 'Minimal')
-                                    )
-                                ),
-                                React.createElement(
-                                    'div',
-                                    { className: 'flex gap-2 overflow-x-auto pb-2' },
-                                    profileList.map(profile =>
-                                        React.createElement(
-                                            'button',
-                                            {
-                                                key: profile,
-                                                onClick: () => setCurrentProfile(profile),
-                                                className: `profile-tab ${currentProfile === profile ? 'active' : 'inactive'}`
-                                            },
-                                            profile
-                                        )
-                                    ),
-                                    React.createElement(
-                                        'button',
-                                        {
-                                            onClick: () => setShowNewProfileModal(true),
-                                            className: 'profile-tab inactive'
-                                        },
-                                        '+ New'
-                                    )
-                                )
-                            ),
-
-                            // Edit mode
-                            editingLogId && editingLog && React.createElement(
-                                'div',
-                                { className: 'mb-6 glass-effect rounded-xl p-4 md:p-6' },
-                                React.createElement('h2', { className: 'text-xl font-bold mb-4 gradient-text' }, '✏️ Edit Entry'),
-                                React.createElement(
-                                    'input',
-                                    {
-                                        type: 'text',
-                                        value: entryName,
-                                        onChange: (e) => setEntryName(e.target.value),
-                                        placeholder: 'Entry name',
-                                        className: 'name-input-large mb-4'
-                                    }
-                                ),
+                                { className: 'flex justify-between items-start gap-3 mb-4' },
+                                React.createElement('h1', { className: 'text-3xl md:text-4xl font-bold text-white' }, '💰 Cash Counter Pro'),
                                 React.createElement(
                                     'select',
                                     {
-                                        value: entryCategory,
-                                        onChange: (e) => setEntryCategory(e.target.value),
-                                        className: 'modal-select'
+                                        value: theme,
+                                        onChange: (e) => setTheme(e.target.value),
+                                        className: 'px-3 py-1 rounded-lg bg-white/20 text-white text-xs md:text-sm font-medium border border-white/30 cursor-pointer'
                                     },
-                                    categories.map(cat =>
-                                        React.createElement('option', { key: cat, value: cat }, cat)
+                                    React.createElement('option', { value: 'slate' }, 'Slate'),
+                                    React.createElement('option', { value: 'navy' }, 'Navy'),
+                                    React.createElement('option', { value: 'forest' }, 'Forest'),
+                                    React.createElement('option', { value: 'minimal' }, 'Minimal')
+                                )
+                            ),
+                            React.createElement(
+                                'div',
+                                { className: 'flex gap-2 overflow-x-auto pb-2' },
+                                profileList.map(profile =>
+                                    React.createElement(
+                                        'button',
+                                        {
+                                            key: profile,
+                                            onClick: () => setCurrentProfile(profile),
+                                            className: `profile-tab ${currentProfile === profile ? 'active' : 'inactive'}`
+                                        },
+                                        profile
                                     )
                                 ),
                                 React.createElement(
-                                    'textarea',
+                                    'button',
                                     {
-                                        value: entryNotes,
-                                        onChange: (e) => setEntryNotes(e.target.value),
-                                        placeholder: 'Notes',
-                                        className: 'modal-input',
-                                        rows: '2'
-                                    }
+                                        onClick: () => setShowNewProfileModal(true),
+                                        className: 'profile-tab inactive'
+                                    },
+                                    '+ New'
+                                )
+                            ),
+                            React.createElement(
+                                'div',
+                                { className: 'flex gap-2 mt-3' },
+                                React.createElement(
+                                    'button',
+                                    {
+                                        onClick: () => setShowAccountsBook(!showAccountsBook),
+                                        className: `px-4 py-2 rounded-lg font-semibold text-white text-sm ${showAccountsBook ? 'bg-gradient-to-r from-blue-500 to-cyan-600' : 'bg-gray-700 hover:bg-gray-600'}`
+                                    },
+                                    showAccountsBook ? '📊 Accounts Book' : '📋 Cash Counter'
+                                ),
+                                React.createElement(
+                                    'button',
+                                    {
+                                        onClick: () => setShowImportModal(true),
+                                        className: 'px-4 py-2 rounded-lg font-semibold text-white text-sm bg-gray-700 hover:bg-gray-600'
+                                    },
+                                    '📥 Import'
+                                )
+                            )
+                        ),
+
+                        // Accounts Book View
+                        showAccountsBook && React.createElement(
+                            'div',
+                            { className: 'mb-6 glass-effect rounded-xl p-4 md:p-6' },
+                            React.createElement('h2', { className: 'text-2xl font-bold mb-6 gradient-text' }, '📊 Accounts Book'),
+                            
+                            // Balance Summary
+                            (() => {
+                                const totals = getAccountsBookTotals();
+                                return React.createElement(
+                                    'div',
+                                    { className: 'grid grid-cols-1 md:grid-cols-3 gap-4 mb-6' },
+                                    React.createElement(
+                                        'div',
+                                        { className: 'glass-effect p-4 rounded-lg border-l-4 border-red-500' },
+                                        React.createElement('div', { className: 'text-sm text-gray-600' }, 'Total Debits'),
+                                        React.createElement('div', { className: 'text-2xl font-bold text-red-600' }, `₹${totals.debits.toLocaleString('en-IN')}`)
+                                    ),
+                                    React.createElement(
+                                        'div',
+                                        { className: 'glass-effect p-4 rounded-lg border-l-4 border-green-500' },
+                                        React.createElement('div', { className: 'text-sm text-gray-600' }, 'Total Credits'),
+                                        React.createElement('div', { className: 'text-2xl font-bold text-green-600' }, `₹${totals.credits.toLocaleString('en-IN')}`)
+                                    ),
+                                    React.createElement(
+                                        'div',
+                                        { className: `glass-effect p-4 rounded-lg border-l-4 ${totals.net === 0 ? 'border-blue-500' : totals.net > 0 ? 'border-red-500' : 'border-green-500'}` },
+                                        React.createElement('div', { className: 'text-sm text-gray-600' }, 'Net Balance'),
+                                        React.createElement('div', { className: `text-2xl font-bold ${totals.net === 0 ? 'text-blue-600' : totals.net > 0 ? 'text-red-600' : 'text-green-600'}` }, 
+                                            totals.net === 0 ? '✓ Balanced' : `₹${Math.abs(totals.net).toLocaleString('en-IN')} ${totals.net > 0 ? 'Debit' : 'Credit'}`
+                                        )
+                                    )
+                                );
+                            })(),
+
+                            // Entry Form
+                            React.createElement(
+                                'div',
+                                { className: 'mb-6 p-4 bg-white/50 rounded-lg' },
+                                React.createElement('h3', { className: 'font-bold mb-3 text-gray-900' }, '➕ New Entry'),
+                                React.createElement(
+                                    'div',
+                                    { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+                                    React.createElement(
+                                        'select',
+                                        {
+                                            value: newAccountEntry.type,
+                                            onChange: (e) => setNewAccountEntry({...newAccountEntry, type: e.target.value}),
+                                            className: 'modal-select'
+                                        },
+                                        React.createElement('option', { value: 'debit' }, 'Debit'),
+                                        React.createElement('option', { value: 'credit' }, 'Credit')
+                                    ),
+                                    React.createElement(
+                                        'input',
+                                        {
+                                            type: 'number',
+                                            value: newAccountEntry.amount,
+                                            onChange: (e) => setNewAccountEntry({...newAccountEntry, amount: e.target.value}),
+                                            placeholder: 'Amount',
+                                            className: 'modal-input'
+                                        }
+                                    ),
+                                    React.createElement(
+                                        'input',
+                                        {
+                                            type: 'text',
+                                            value: newAccountEntry.description,
+                                            onChange: (e) => setNewAccountEntry({...newAccountEntry, description: e.target.value}),
+                                            placeholder: 'Description',
+                                            className: 'modal-input'
+                                        }
+                                    ),
+                                    React.createElement(
+                                        'input',
+                                        {
+                                            type: 'date',
+                                            value: newAccountEntry.date,
+                                            onChange: (e) => setNewAccountEntry({...newAccountEntry, date: e.target.value}),
+                                            className: 'modal-input'
+                                        }
+                                    )
+                                ),
+                                React.createElement(
+                                    'button',
+                                    {
+                                        onClick: addAccountsBookEntry,
+                                        className: 'w-full mt-3 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-lg font-semibold hover:shadow-lg'
+                                    },
+                                    '💾 Save Entry'
+                                )
+                            ),
+
+                            // Entries List
+                            accountsBook.length === 0
+                                ? React.createElement('div', { className: 'text-center text-gray-500 py-8' }, '📭 No entries yet')
+                                : React.createElement(
+                                    'div',
+                                    { className: 'space-y-2 max-h-96 overflow-y-auto' },
+                                    [...accountsBook].reverse().map(entry =>
+                                        React.createElement(
+                                            'div',
+                                            { key: entry.id, className: 'flex items-center justify-between p-3 bg-white/50 rounded-lg' },
+                                            React.createElement(
+                                                'div',
+                                                { className: 'flex-1' },
+                                                React.createElement('div', { className: 'font-semibold text-gray-900 text-sm' }, entry.description),
+                                                React.createElement('div', { className: 'text-xs text-gray-600' }, entry.date)
+                                            ),
+                                            React.createElement(
+                                                'div',
+                                                { className: 'flex items-center gap-2' },
+                                                React.createElement('div', { className: `font-bold text-sm ${entry.type === 'debit' ? 'text-red-600' : 'text-green-600'}` }, 
+                                                    `${entry.type === 'debit' ? '-' : '+'} ₹${entry.amount.toLocaleString('en-IN')}`
+                                                ),
+                                                React.createElement(
+                                                    'button',
+                                                    {
+                                                        onClick: () => deleteAccountsBookEntry(entry.id),
+                                                        className: 'text-red-500 hover:text-red-700 text-lg'
+                                                    },
+                                                    '✕'
+                                                )
+                                            )
+                                        )
+                                    )
+                                ),
+
+                            // Export Buttons
+                            accountsBook.length > 0 && React.createElement(
+                                'div',
+                                { className: 'flex gap-2 mt-4' },
+                                React.createElement(
+                                    'button',
+                                    {
+                                        onClick: () => exportAccountsBook('csv'),
+                                        className: 'flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 text-sm'
+                                    },
+                                    '📊 Export CSV'
+                                ),
+                                React.createElement(
+                                    'button',
+                                    {
+                                        onClick: () => exportAccountsBook('json'),
+                                        className: 'flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 text-sm'
+                                    },
+                                    '📄 Export JSON'
+                                )
+                            )
+                        ),
+
+                        // Edit mode
+                        editingLogId && editingLog && React.createElement(
+                            'div',
+                            { className: 'mb-6 glass-effect rounded-xl p-4 md:p-6' },
+                            React.createElement('h2', { className: 'text-xl font-bold mb-4 gradient-text' }, '✏️ Edit Entry'),
+                            React.createElement(
+                                'input',
+                                {
+                                    type: 'text',
+                                    value: entryName,
+                                    onChange: (e) => setEntryName(e.target.value),
+                                    placeholder: 'Entry name',
+                                    className: 'name-input-large mb-4'
+                                }
+                            ),
+                            React.createElement(
+                                'select',
+                                {
+                                    value: entryCategory,
+                                    onChange: (e) => setEntryCategory(e.target.value),
+                                    className: 'modal-select'
+                                },
+                                categories.map(cat =>
+                                    React.createElement('option', { key: cat, value: cat }, cat)
+                                )
+                            ),
+                            React.createElement(
+                                'textarea',
+                                {
+                                    value: entryNotes,
+                                    onChange: (e) => setEntryNotes(e.target.value),
+                                    placeholder: 'Notes',
+                                    className: 'modal-input',
+                                    rows: '2'
+                                }
+                            ),
+                            React.createElement(
+                                'div',
+                                { className: 'split-view mb-4' },
+                                React.createElement(
+                                    'div',
+                                    null,
+                                    React.createElement('h3', { className: 'font-bold text-gray-700 mb-3 text-sm' }, 'Original'),
+                                    React.createElement(
+                                        'div',
+                                        { className: 'space-y-1' },
+                                        denominations.map(d => {
+                                            const origQty = parseInt(editingLog.counts[d.value]) || 0;
+                                            return React.createElement(
+                                                'div',
+                                                { key: d.value, className: origQty > 0 ? 'denomination-card' : 'hidden' },
+                                                React.createElement(
+                                                    'div',
+                                                    { className: 'flex justify-between items-center text-sm' },
+                                                    React.createElement('span', null, `${d.emoji} ₹${d.label}`),
+                                                    React.createElement('div', { className: 'flex items-center gap-2' },
+                                                        React.createElement('span', { className: 'font-bold' }, origQty),
+                                                        React.createElement('span', { className: 'text-xs text-gray-500' }, `₹${origQty * d.value}`)
+                                                    )
+                                                )
+                                            );
+                                        })
+                                    )
                                 ),
                                 React.createElement(
                                     'div',
-                                    { className: 'split-view mb-4' },
+                                    null,
+                                    React.createElement('h3', { className: 'font-bold text-gray-700 mb-3 text-sm' }, 'Updated'),
                                     React.createElement(
                                         'div',
-                                        null,
-                                        React.createElement('h3', { className: 'font-bold text-gray-700 mb-3 text-sm' }, 'Original'),
-                                        React.createElement(
-                                            'div',
-                                            { className: 'space-y-1' },
-                                            denominations.map(d => {
-                                                const origQty = parseInt(editingLog.counts[d.value]) || 0;
-                                                return React.createElement(
+                                        { className: 'space-y-1' },
+                                        denominations.map(d => {
+                                            const newQty = parseInt(editQuantities[d.value]) || 0;
+                                            const origQty = parseInt(editingLog.counts[d.value]) || 0;
+                                            const diff = newQty - origQty;
+                                            return React.createElement(
+                                                'div',
+                                                { key: d.value, className: `denomination-card ${newQty < 0 ? 'negative' : ''}` },
+                                                React.createElement(
                                                     'div',
-                                                    { key: d.value, className: origQty > 0 ? 'denomination-card' : 'hidden' },
+                                                    { className: 'space-y-1' },
                                                     React.createElement(
                                                         'div',
                                                         { className: 'flex justify-between items-center text-sm' },
                                                         React.createElement('span', null, `${d.emoji} ₹${d.label}`),
-                                                        React.createElement('div', { className: 'flex items-center gap-2' },
-                                                            React.createElement('span', { className: 'font-bold' }, origQty),
-                                                            React.createElement('span', { className: 'text-xs text-gray-500' }, `₹${origQty * d.value}`)
+                                                        React.createElement(
+                                                            'div',
+                                                            { className: 'flex items-center gap-1' },
+                                                            React.createElement(
+                                                                'button',
+                                                                {
+                                                                    onClick: () => setEditQuantities(prev => ({
+                                                                        ...prev,
+                                                                        [d.value]: (Math.max(-5, (parseInt(prev[d.value]) || 0) - 1)).toString()
+                                                                    })),
+                                                                    className: 'btn-increment'
+                                                                },
+                                                                '−'
+                                                            ),
+                                                            React.createElement(
+                                                                'input',
+                                                                {
+                                                                    type: 'number',
+                                                                    min: '-5',
+                                                                    value: editQuantities[d.value] || '',
+                                                                    onChange: (e) => {
+                                                                        let val = parseInt(e.target.value);
+                                                                        if (!isNaN(val)) {
+                                                                            val = Math.max(-5, val);
+                                                                        }
+                                                                        setEditQuantities(prev => ({
+                                                                            ...prev,
+                                                                            [d.value]: val === -0 ? '0' : val.toString()
+                                                                        }));
+                                                                    },
+                                                                    className: 'qty-input'
+                                                                }
+                                                            ),
+                                                            React.createElement(
+                                                                'button',
+                                                                {
+                                                                    onClick: () => setEditQuantities(prev => ({
+                                                                        ...prev,
+                                                                        [d.value]: ((parseInt(prev[d.value]) || 0) + 1).toString()
+                                                                    })),
+                                                                    className: 'btn-increment'
+                                                                },
+                                                                '+'
+                                                            )
                                                         )
+                                                    ),
+                                                    diff !== 0 && React.createElement(
+                                                        'div',
+                                                        { className: `${diff > 0 ? 'diff-positive' : 'diff-negative'}` },
+                                                        `${diff > 0 ? '+' : ''}${diff} (₹${diff * d.value})`
                                                     )
-                                                );
-                                            })
-                                        )
-                                    ),
+                                                )
+                                            );
+                                        })
+                                    )
+                                )
+                            ),
+                            React.createElement(
+                                'div',
+                                { className: 'flex gap-3 justify-between text-sm' },
+                                React.createElement(
+                                    'button',
+                                    {
+                                        onClick: cancelEdit,
+                                        className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-gray-700 bg-white hover:bg-gray-100'
+                                    },
+                                    'Cancel'
+                                ),
+                                React.createElement(
+                                    'button',
+                                    {
+                                        onClick: saveEditedEntry,
+                                        className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-purple-500 to-indigo-600 hover:shadow-lg'
+                                    },
+                                    'Save as New'
+                                )
+                            )
+                        ),
+
+                        // Main content
+                        !editingLogId && !showAccountsBook && React.createElement(
+                            React.Fragment,
+                            null,
+                            React.createElement(
+                                'div',
+                                { className: 'grid grid-cols-1 lg:grid-cols-3 gap-4' },
+                                // Counter
+                                React.createElement(
+                                    'div',
+                                    { className: 'lg:col-span-2 space-y-4' },
+                                    // Name + Total
                                     React.createElement(
                                         'div',
-                                        null,
-                                        React.createElement('h3', { className: 'font-bold text-gray-700 mb-3 text-sm' }, 'Updated'),
+                                        { className: 'glass-effect rounded-xl p-6 hover-scale' },
+                                        React.createElement(
+                                            'input',
+                                            {
+                                                type: 'text',
+                                                value: entryName,
+                                                onChange: (e) => setEntryName(e.target.value),
+                                                placeholder: 'Entry name (e.g., Morning Opening)',
+                                                className: 'name-input-large'
+                                            }
+                                        ),
+                                        React.createElement(
+                                            'div',
+                                            { className: 'text-center' },
+                                            React.createElement('p', { className: 'text-white/70 text-xs uppercase tracking-widest mb-1' }, 'Total Amount'),
+                                            React.createElement('h2', { className: `text-4xl md:text-5xl font-black ${currentTotal < 0 ? 'text-red-500' : 'gradient-text'}` }, `₹${currentTotal.toLocaleString('en-IN')}`)
+                                        )
+                                    ),
+
+                                    // Category + Notes
+                                    React.createElement(
+                                        'div',
+                                        { className: 'glass-effect rounded-xl p-4 space-y-3' },
+                                        React.createElement(
+                                            'select',
+                                            {
+                                                value: entryCategory,
+                                                onChange: (e) => setEntryCategory(e.target.value),
+                                                className: 'modal-select m-0'
+                                            },
+                                            categories.map(cat =>
+                                                React.createElement('option', { key: cat, value: cat }, cat)
+                                            )
+                                        ),
+                                        React.createElement(
+                                            'textarea',
+                                            {
+                                                value: entryNotes,
+                                                onChange: (e) => setEntryNotes(e.target.value),
+                                                placeholder: 'Add notes (optional)',
+                                                className: 'modal-input m-0',
+                                                rows: '2'
+                                            }
+                                        )
+                                    ),
+
+                                    // Denominations
+                                    React.createElement(
+                                        'div',
+                                        { className: 'glass-effect rounded-xl p-4' },
+                                        React.createElement('h3', { className: 'text-sm font-bold text-gray-900 mb-3' }, 'Quantities (-5 to +∞)'),
                                         React.createElement(
                                             'div',
                                             { className: 'space-y-1' },
                                             denominations.map(d => {
-                                                const newQty = parseInt(editQuantities[d.value]) || 0;
-                                                const origQty = parseInt(editingLog.counts[d.value]) || 0;
-                                                const diff = newQty - origQty;
+                                                const qty = parseInt(quantities[d.value]) || 0;
                                                 return React.createElement(
                                                     'div',
-                                                    { key: d.value, className: `denomination-card ${newQty < 0 ? 'negative' : ''}` },
+                                                    { key: d.value, className: `denomination-card ${qty < 0 ? 'negative' : ''}` },
                                                     React.createElement(
                                                         'div',
-                                                        { className: 'space-y-1' },
+                                                        { className: 'flex items-center justify-between text-sm' },
+                                                        React.createElement('span', { className: 'font-semibold text-gray-700' }, `${d.emoji} ₹${d.label}`),
                                                         React.createElement(
                                                             'div',
-                                                            { className: 'flex justify-between items-center text-sm' },
-                                                            React.createElement('span', null, `${d.emoji} ₹${d.label}`),
+                                                            { className: 'flex items-center gap-1' },
                                                             React.createElement(
-                                                                'div',
-                                                                { className: 'flex items-center gap-1' },
-                                                                React.createElement(
-                                                                    'button',
-                                                                    {
-                                                                        onClick: () => setEditQuantities(prev => ({
+                                                                'button',
+                                                                {
+                                                                    onClick: () => setQuantities(prev => ({
+                                                                        ...prev,
+                                                                        [d.value]: (Math.max(-5, (parseInt(prev[d.value]) || 0) - 1)).toString()
+                                                                    })),
+                                                                    className: 'btn-increment'
+                                                                },
+                                                                '−'
+                                                            ),
+                                                            React.createElement(
+                                                                'input',
+                                                                {
+                                                                    type: 'number',
+                                                                    min: '-5',
+                                                                    value: quantities[d.value],
+                                                                    onChange: (e) => {
+                                                                        let val = parseInt(e.target.value);
+                                                                        if (!isNaN(val)) {
+                                                                            val = Math.max(-5, val);
+                                                                        }
+                                                                        setQuantities(prev => ({
                                                                             ...prev,
-                                                                            [d.value]: (Math.max(-5, (parseInt(prev[d.value]) || 0) - 1)).toString()
-                                                                        })),
-                                                                        className: 'btn-increment'
+                                                                            [d.value]: val === -0 ? '0' : val.toString()
+                                                                        }));
                                                                     },
-                                                                    '−'
-                                                                ),
-                                                                React.createElement(
-                                                                    'input',
-                                                                    {
-                                                                        type: 'number',
-                                                                        min: '-5',
-                                                                        value: editQuantities[d.value] || '',
-                                                                        onChange: (e) => {
-                                                                            let val = parseInt(e.target.value);
-                                                                            if (!isNaN(val)) {
-                                                                                val = Math.max(-5, val);
-                                                                            }
-                                                                            setEditQuantities(prev => ({
-                                                                                ...prev,
-                                                                                [d.value]: val === -0 ? '0' : val.toString()
-                                                                            }));
-                                                                        },
-                                                                        className: 'qty-input'
-                                                                    }
-                                                                ),
-                                                                React.createElement(
-                                                                    'button',
-                                                                    {
-                                                                        onClick: () => setEditQuantities(prev => ({
-                                                                            ...prev,
-                                                                            [d.value]: ((parseInt(prev[d.value]) || 0) + 1).toString()
-                                                                        })),
-                                                                        className: 'btn-increment'
-                                                                    },
-                                                                    '+'
-                                                                )
+                                                                    placeholder: '0',
+                                                                    className: 'qty-input'
+                                                                }
+                                                            ),
+                                                            React.createElement(
+                                                                'button',
+                                                                {
+                                                                    onClick: () => setQuantities(prev => ({
+                                                                        ...prev,
+                                                                        [d.value]: ((parseInt(prev[d.value]) || 0) + 1).toString()
+                                                                    })),
+                                                                    className: 'btn-increment'
+                                                                },
+                                                                '+'
+                                                            ),
+                                                            React.createElement(
+                                                                'span',
+                                                                { className: `amount-display text-sm min-w-16 text-right ${qty < 0 ? 'negative' : ''}` },
+                                                                `₹${(qty * d.value).toLocaleString('en-IN')}`
                                                             )
-                                                        ),
-                                                        diff !== 0 && React.createElement(
-                                                            'div',
-                                                            { className: `${diff > 0 ? 'diff-positive' : 'diff-negative'}` },
-                                                            `${diff > 0 ? '+' : ''}${diff} (₹${diff * d.value})`
                                                         )
                                                     )
                                                 );
                                             })
                                         )
+                                    ),
+
+                                    // Save button
+                                    React.createElement(
+                                        'button',
+                                        {
+                                            onClick: saveCount,
+                                            className: 'w-full bg-gradient-to-r from-green-400 to-emerald-600 text-white font-bold py-3 rounded-lg text-sm hover:shadow-lg hover-scale'
+                                        },
+                                        '💾 Save Count'
                                     )
                                 ),
-                                React.createElement(
-                                    'div',
-                                    { className: 'flex gap-3 justify-between text-sm' },
-                                    React.createElement(
-                                        'button',
-                                        {
-                                            onClick: cancelEdit,
-                                            className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-gray-700 bg-white hover:bg-gray-100'
-                                        },
-                                        'Cancel'
-                                    ),
-                                    React.createElement(
-                                        'button',
-                                        {
-                                            onClick: saveEditedEntry,
-                                            className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-purple-500 to-indigo-600 hover:shadow-lg'
-                                        },
-                                        'Save as New'
-                                    )
-                                )
-                            ),
 
-                            // Main content
-                            !editingLogId && React.createElement(
-                                React.Fragment,
-                                null,
+                                // History
                                 React.createElement(
                                     'div',
-                                    { className: 'grid grid-cols-1 lg:grid-cols-3 gap-4' },
-                                    // Counter
+                                    { className: 'lg:col-span-1' },
                                     React.createElement(
                                         'div',
-                                        { className: 'lg:col-span-2 space-y-4' },
-                                        // Name + Total
+                                        { className: 'glass-effect rounded-xl p-4 h-full flex flex-col' },
                                         React.createElement(
                                             'div',
-                                            { className: 'glass-effect rounded-xl p-6 hover-scale' },
-                                            React.createElement(
-                                                'input',
+                                            { className: 'flex justify-between items-center mb-3 gap-2' },
+                                            React.createElement('h3', { className: 'text-sm font-bold text-gray-900' }, 'History'),
+                                            currentProfileData.logs.length > 0 && React.createElement(
+                                                'button',
                                                 {
-                                                    type: 'text',
-                                                    value: entryName,
-                                                    onChange: (e) => setEntryName(e.target.value),
-                                                    placeholder: 'Entry name (e.g., Morning Opening)',
-                                                    className: 'name-input-large'
-                                                }
-                                            ),
-                                            React.createElement(
-                                                'div',
-                                                { className: 'text-center' },
-                                                React.createElement('p', { className: 'text-white/70 text-xs uppercase tracking-widest mb-1' }, 'Total Amount'),
-                                                React.createElement('h2', { className: `text-4xl md:text-5xl font-black ${currentTotal < 0 ? 'text-red-500' : 'gradient-text'}` }, `₹${currentTotal.toLocaleString('en-IN')}`)
-                                            )
-                                        ),
-
-                                        // Category + Notes
-                                        React.createElement(
-                                            'div',
-                                            { className: 'glass-effect rounded-xl p-4 space-y-3' },
-                                            React.createElement(
-                                                'select',
-                                                {
-                                                    value: entryCategory,
-                                                    onChange: (e) => setEntryCategory(e.target.value),
-                                                    className: 'modal-select m-0'
+                                                    onClick: () => { setMultiSelectMode(!multiSelectMode); setSelectedEntries(new Set()); },
+                                                    className: `text-xs px-2 py-1 rounded ${multiSelectMode ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700'}`
                                                 },
-                                                categories.map(cat =>
-                                                    React.createElement('option', { key: cat, value: cat }, cat)
-                                                )
-                                            ),
+                                                multiSelectMode ? '✓ Select' : 'Select'
+                                            )
+                                        ),
+
+                                        // Category filter
+                                        categories.length > 0 && React.createElement(
+                                            'div',
+                                            { className: 'mb-3 pb-3 border-b border-gray-200 flex flex-wrap gap-1' },
                                             React.createElement(
-                                                'textarea',
+                                                'button',
                                                 {
-                                                    value: entryNotes,
-                                                    onChange: (e) => setEntryNotes(e.target.value),
-                                                    placeholder: 'Add notes (optional)',
-                                                    className: 'modal-input m-0',
-                                                    rows: '2'
-                                                }
-                                            )
-                                        ),
-
-                                        // Denominations
-                                        React.createElement(
-                                            'div',
-                                            { className: 'glass-effect rounded-xl p-4' },
-                                            React.createElement('h3', { className: 'text-sm font-bold text-gray-900 mb-3' }, 'Quantities (-5 to +∞)'),
-                                            React.createElement(
-                                                'div',
-                                                { className: 'space-y-1' },
-                                                denominations.map(d => {
-                                                    const qty = parseInt(quantities[d.value]) || 0;
-                                                    return React.createElement(
-                                                        'div',
-                                                        { key: d.value, className: `denomination-card ${qty < 0 ? 'negative' : ''}` },
-                                                        React.createElement(
-                                                            'div',
-                                                            { className: 'flex items-center justify-between text-sm' },
-                                                            React.createElement('span', { className: 'font-semibold text-gray-700' }, `${d.emoji} ₹${d.label}`),
-                                                            React.createElement(
-                                                                'div',
-                                                                { className: 'flex items-center gap-1' },
-                                                                React.createElement(
-                                                                    'button',
-                                                                    {
-                                                                        onClick: () => setQuantities(prev => ({
-                                                                            ...prev,
-                                                                            [d.value]: (Math.max(-5, (parseInt(prev[d.value]) || 0) - 1)).toString()
-                                                                        })),
-                                                                        className: 'btn-increment'
-                                                                    },
-                                                                    '−'
-                                                                ),
-                                                                React.createElement(
-                                                                    'input',
-                                                                    {
-                                                                        type: 'number',
-                                                                        min: '-5',
-                                                                        value: quantities[d.value],
-                                                                        onChange: (e) => {
-                                                                            let val = parseInt(e.target.value);
-                                                                            if (!isNaN(val)) {
-                                                                                val = Math.max(-5, val);
-                                                                            }
-                                                                            setQuantities(prev => ({
-                                                                                ...prev,
-                                                                                [d.value]: val === -0 ? '0' : val.toString()
-                                                                            }));
-                                                                        },
-                                                                        placeholder: '0',
-                                                                        className: 'qty-input'
-                                                                    }
-                                                                ),
-                                                                React.createElement(
-                                                                    'button',
-                                                                    {
-                                                                        onClick: () => setQuantities(prev => ({
-                                                                            ...prev,
-                                                                            [d.value]: ((parseInt(prev[d.value]) || 0) + 1).toString()
-                                                                        })),
-                                                                        className: 'btn-increment'
-                                                                    },
-                                                                    '+'
-                                                                ),
-                                                                React.createElement(
-                                                                    'span',
-                                                                    { className: `amount-display text-sm min-w-16 text-right ${qty < 0 ? 'negative' : ''}` },
-                                                                    `₹${(qty * d.value).toLocaleString('en-IN')}`
-                                                                )
-                                                            )
-                                                        )
-                                                    );
-                                                })
-                                            )
-                                        ),
-
-                                        // Save button
-                                        React.createElement(
-                                            'button',
-                                            {
-                                                onClick: saveCount,
-                                                className: 'w-full bg-gradient-to-r from-green-400 to-emerald-600 text-white font-bold py-3 rounded-lg text-sm hover:shadow-lg hover-scale'
-                                            },
-                                            '💾 Save Count'
-                                        )
-                                    ),
-
-                                    // History
-                                    React.createElement(
-                                        'div',
-                                        { className: 'lg:col-span-1' },
-                                        React.createElement(
-                                            'div',
-                                            { className: 'glass-effect rounded-xl p-4 h-full flex flex-col' },
-                                            React.createElement(
-                                                'div',
-                                                { className: 'flex justify-between items-center mb-3 gap-2' },
-                                                React.createElement('h3', { className: 'text-sm font-bold text-gray-900' }, 'History'),
-                                                currentProfileData.logs.length > 0 && React.createElement(
-                                                    'button',
-                                                    {
-                                                        onClick: () => { setMultiSelectMode(!multiSelectMode); setSelectedEntries(new Set()); },
-                                                        className: `text-xs px-2 py-1 rounded ${multiSelectMode ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700'}`
-                                                    },
-                                                    multiSelectMode ? '✓ Select' : 'Select'
-                                                )
+                                                    onClick: () => setSelectedCategoryFilter('All'),
+                                                    className: `category-btn text-xs ${selectedCategoryFilter === 'All' ? 'active' : ''}`
+                                                },
+                                                'All'
                                             ),
-
-                                            // Category filter
-                                            categories.length > 0 && React.createElement(
-                                                'div',
-                                                { className: 'mb-3 pb-3 border-b border-gray-200 flex flex-wrap gap-1' },
+                                            categories.map(cat =>
                                                 React.createElement(
                                                     'button',
                                                     {
-                                                        onClick: () => setSelectedCategoryFilter('All'),
-                                                        className: `category-btn text-xs ${selectedCategoryFilter === 'All' ? 'active' : ''}`
+                                                        key: cat,
+                                                        onClick: () => setSelectedCategoryFilter(cat),
+                                                        className: `category-btn text-xs ${selectedCategoryFilter === cat ? 'active' : ''} relative group`
                                                     },
-                                                    'All'
-                                                ),
-                                                categories.map(cat =>
                                                     React.createElement(
-                                                        'button',
-                                                        {
-                                                            key: cat,
-                                                            onClick: () => setSelectedCategoryFilter(cat),
-                                                            className: `category-btn text-xs ${selectedCategoryFilter === cat ? 'active' : ''} relative group`
-                                                        },
+                                                        'span',
+                                                        { className: 'flex items-center justify-between gap-1' },
+                                                        React.createElement('span', null, cat),
                                                         React.createElement(
                                                             'span',
-                                                            { className: 'flex items-center justify-between gap-1' },
-                                                            React.createElement('span', null, cat),
+                                                            { className: 'flex gap-0.5' },
                                                             React.createElement(
-                                                                'span',
-                                                                { className: 'flex gap-0.5' },
-                                                                React.createElement(
-                                                                    'button',
-                                                                    {
-                                                                        onClick: (e) => { e.stopPropagation(); setEditingCategory(cat); setEditingCategoryNewName(cat); setShowCategoryEdit(true); },
-                                                                        className: 'text-xs opacity-50 hover:opacity-100 transition-opacity p-0.5'
-                                                                    },
-                                                                    '✎'
-                                                                ),
-                                                                React.createElement(
-                                                                    'button',
-                                                                    {
-                                                                        onClick: (e) => { e.stopPropagation(); setCategoryToDelete(cat); setShowDeleteCategoryModal(true); },
-                                                                        className: 'text-xs opacity-50 hover:opacity-100 transition-opacity p-0.5'
-                                                                    },
-                                                                    '✕'
-                                                                )
+                                                                'button',
+                                                                {
+                                                                    onClick: (e) => { e.stopPropagation(); setEditingCategory(cat); setEditingCategoryNewName(cat); setShowCategoryEdit(true); },
+                                                                    className: 'text-xs opacity-50 hover:opacity-100 transition-opacity p-0.5'
+                                                                },
+                                                                '✎'
+                                                            ),
+                                                            React.createElement(
+                                                                'button',
+                                                                {
+                                                                    onClick: (e) => { e.stopPropagation(); setCategoryToDelete(cat); setShowDeleteCategoryModal(true); },
+                                                                    className: 'text-xs opacity-50 hover:opacity-100 transition-opacity p-0.5'
+                                                                },
+                                                                '✕'
                                                             )
                                                         )
                                                     )
                                                 )
-                                            ),
+                                            )
+                                        ),
 
-                                            multiSelectMode && selectedEntries.size > 0 && React.createElement(
+                                        multiSelectMode && selectedEntries.size > 0 && React.createElement(
+                                            'div',
+                                            { className: 'mb-3 p-2 bg-gray-100 rounded-lg space-y-2 text-xs' },
+                                            React.createElement(
                                                 'div',
-                                                { className: 'mb-3 p-2 bg-gray-100 rounded-lg space-y-2 text-xs' },
+                                                { className: 'flex gap-2' },
                                                 React.createElement(
-                                                    'div',
-                                                    { className: 'flex gap-2' },
-                                                    React.createElement(
-                                                        'button',
-                                                        {
-                                                            onClick: () => { setAddOrSubtract('add'); applyMultiSelectOperation(); },
-                                                            className: 'flex-1 bg-green-500 text-white py-1 rounded font-semibold'
-                                                        },
-                                                        `➕ Add (${selectedEntries.size})`
-                                                    ),
-                                                    React.createElement(
-                                                        'button',
-                                                        {
-                                                            onClick: () => { setAddOrSubtract('subtract'); applyMultiSelectOperation(); },
-                                                            className: 'flex-1 bg-red-500 text-white py-1 rounded font-semibold'
-                                                        },
-                                                        `➖ Sub (${selectedEntries.size})`
-                                                    )
+                                                    'button',
+                                                    {
+                                                        onClick: () => { setAddOrSubtract('add'); applyMultiSelectOperation(); },
+                                                        className: 'flex-1 bg-green-500 text-white py-1 rounded font-semibold'
+                                                    },
+                                                    `➕ Add (${selectedEntries.size})`
+                                                ),
+                                                React.createElement(
+                                                    'button',
+                                                    {
+                                                        onClick: () => { setAddOrSubtract('subtract'); applyMultiSelectOperation(); },
+                                                        className: 'flex-1 bg-red-500 text-white py-1 rounded font-semibold'
+                                                    },
+                                                    `➖ Sub (${selectedEntries.size})`
                                                 )
-                                            ),
+                                            )
+                                        ),
 
-                                            filteredLogs.length === 0
-                                                ? React.createElement('div', { className: 'flex-1 flex items-center justify-center text-gray-400 text-xs text-center' }, '📭 No counts yet')
-                                                : React.createElement(
-                                                    'div',
-                                                    { className: 'flex-1 overflow-y-auto space-y-1' },
-                                                    [...filteredLogs].reverse().map((log) =>
+                                        filteredLogs.length === 0 
+                                            ? React.createElement('div', { className: 'flex-1 flex items-center justify-center text-gray-400 text-xs text-center' }, '📭 No counts yet')
+                                            : React.createElement(
+                                                'div',
+                                                { className: 'flex-1 overflow-y-auto space-y-1' },
+                                                [...filteredLogs].reverse().map((log) =>
+                                                    React.createElement(
+                                                        'div',
+                                                        { 
+                                                            key: log.id, 
+                                                            className: `history-entry ${selectedEntries.has(log.id) ? 'selected' : ''} cursor-pointer`,
+                                                            onClick: () => multiSelectMode ? toggleSelectEntry(log.id) : openEditEntry(log)
+                                                        },
                                                         React.createElement(
                                                             'div',
-                                                            {
-                                                                key: log.id,
-                                                                className: `history-entry ${selectedEntries.has(log.id) ? 'selected' : ''} cursor-pointer`,
-                                                                onClick: () => multiSelectMode ? toggleSelectEntry(log.id) : openEditEntry(log)
-                                                            },
+                                                            { className: 'flex items-start justify-between gap-2' },
+                                                            multiSelectMode && React.createElement(
+                                                                'div',
+                                                                { className: `checkbox-custom ${selectedEntries.has(log.id) ? 'checked' : ''}`, onClick: (e) => { e.stopPropagation(); toggleSelectEntry(log.id); } },
+                                                                selectedEntries.has(log.id) && '✓'
+                                                            ),
                                                             React.createElement(
                                                                 'div',
-                                                                { className: 'flex items-start justify-between gap-2' },
-                                                                multiSelectMode && React.createElement(
-                                                                    'div',
-                                                                    { className: `checkbox-custom ${selectedEntries.has(log.id) ? 'checked' : ''}`, onClick: (e) => { e.stopPropagation(); toggleSelectEntry(log.id); } },
-                                                                    selectedEntries.has(log.id) && '✓'
-                                                                ),
-                                                                React.createElement(
-                                                                    'div',
-                                                                    { className: 'flex-1 min-w-0' },
-                                                                    React.createElement('div', { className: 'font-bold text-gray-900 text-xs' }, log.name),
-                                                                    React.createElement('div', { className: `font-bold text-xs ${log.total < 0 ? 'text-red-600' : 'text-gray-900'}` }, `₹${log.total.toLocaleString('en-IN')}`),
-                                                                    React.createElement('div', { className: 'text-gray-500 text-xs' }, log.timeString),
-                                                                    React.createElement('div', { className: 'text-xs text-purple-600' }, log.category),
-                                                                    log.notes && React.createElement('div', { className: 'text-xs text-gray-600 italic truncate' }, log.notes),
-                                                                    log.editedFromId && React.createElement('div', { className: 'text-xs text-purple-600' }, '(edited)')
-                                                                ),
-                                                                !multiSelectMode && React.createElement(
-                                                                    'button',
-                                                                    {
-                                                                        onClick: (e) => { e.stopPropagation(); deleteLog(log.id); },
-                                                                        className: 'text-gray-400 hover:text-red-500 text-lg flex-shrink-0'
-                                                                    },
-                                                                    '✕'
-                                                                )
+                                                                { className: 'flex-1 min-w-0' },
+                                                                React.createElement('div', { className: 'font-bold text-gray-900 text-xs' }, log.name),
+                                                                React.createElement('div', { className: `font-bold text-xs ${log.total < 0 ? 'text-red-600' : 'text-gray-900'}` }, `₹${log.total.toLocaleString('en-IN')}`),
+                                                                React.createElement('div', { className: 'text-gray-500 text-xs' }, log.timeString),
+                                                                React.createElement('div', { className: 'text-xs text-purple-600' }, log.category),
+                                                                log.notes && React.createElement('div', { className: 'text-xs text-gray-600 italic truncate' }, log.notes),
+                                                                log.editedFromId && React.createElement('div', { className: 'text-xs text-purple-600' }, '(edited)')
+                                                            ),
+                                                            !multiSelectMode && React.createElement(
+                                                                'button',
+                                                                {
+                                                                    onClick: (e) => { e.stopPropagation(); deleteLog(log.id); },
+                                                                    className: 'text-gray-400 hover:text-red-500 text-lg flex-shrink-0'
+                                                                },
+                                                                '✕'
                                                             )
                                                         )
                                                     )
-                                                ),
-
-                                            currentProfileData.logs.length > 0 && React.createElement(
-                                                'div',
-                                                { className: 'border-t mt-3 pt-3 space-y-1' },
-                                                React.createElement(
-                                                    'button',
-                                                    {
-                                                        onClick: addNewCategory,
-                                                        className: 'w-full bg-blue-100 text-blue-700 font-semibold py-1 rounded text-xs hover:bg-blue-200'
-                                                    },
-                                                    '➕ Category'
-                                                ),
-                                                React.createElement(
-                                                    'button',
-                                                    {
-                                                        onClick: () => exportLogs('csv'),
-                                                        className: 'w-full bg-gray-200 text-gray-800 font-semibold py-1 rounded text-xs hover:bg-gray-300'
-                                                    },
-                                                    '📊 CSV'
-                                                ),
-                                                React.createElement(
-                                                    'button',
-                                                    {
-                                                        onClick: () => exportLogs('json'),
-                                                        className: 'w-full bg-gray-200 text-gray-800 font-semibold py-1 rounded text-xs hover:bg-gray-300'
-                                                    },
-                                                    '📄 JSON'
                                                 )
+                                            ),
+
+                                        currentProfileData.logs.length > 0 && React.createElement(
+                                            'div',
+                                            { className: 'border-t mt-3 pt-3 space-y-1' },
+                                            React.createElement(
+                                                'button',
+                                                {
+                                                    onClick: addNewCategory,
+                                                    className: 'w-full bg-blue-100 text-blue-700 font-semibold py-1 rounded text-xs hover:bg-blue-200'
+                                                },
+                                                '➕ Category'
+                                            ),
+                                            React.createElement(
+                                                'button',
+                                                {
+                                                    onClick: () => exportLogs('csv'),
+                                                    className: 'w-full bg-gray-200 text-gray-800 font-semibold py-1 rounded text-xs hover:bg-gray-300'
+                                                },
+                                                '📊 CSV'
+                                            ),
+                                            React.createElement(
+                                                'button',
+                                                {
+                                                    onClick: () => exportLogs('json'),
+                                                    className: 'w-full bg-gray-200 text-gray-800 font-semibold py-1 rounded text-xs hover:bg-gray-300'
+                                                },
+                                                '📄 JSON'
                                             )
                                         )
                                     )
                                 )
                             )
                         )
-                    ),
+                    )
+                ),
 
-                    // Profile Modal
-                    showNewProfileModal && React.createElement(
+                // Profile Modal
+                showNewProfileModal && React.createElement(
+                    'div',
+                    { className: 'fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50' },
+                    React.createElement(
                         'div',
-                        { className: 'fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50' },
+                        { className: 'glass-effect rounded-xl p-6 max-w-sm w-full' },
+                        React.createElement('h3', { className: 'text-lg font-bold text-gray-900 mb-4' }, '✨ New Profile'),
+                        React.createElement(
+                            'input',
+                            {
+                                type: 'text',
+                                value: newProfileName,
+                                onChange: (e) => setNewProfileName(e.target.value),
+                                onKeyPress: (e) => e.key === 'Enter' && createProfile(),
+                                placeholder: 'Name',
+                                className: 'modal-input'
+                            }
+                        ),
                         React.createElement(
                             'div',
-                            { className: 'glass-effect rounded-xl p-6 max-w-sm w-full' },
-                            React.createElement('h3', { className: 'text-lg font-bold text-gray-900 mb-4' }, '✨ New Profile'),
+                            { className: 'flex gap-3 text-sm' },
                             React.createElement(
-                                'input',
+                                'button',
                                 {
-                                    type: 'text',
-                                    value: newProfileName,
-                                    onChange: (e) => setNewProfileName(e.target.value),
-                                    onKeyPress: (e) => e.key === 'Enter' && createProfile(),
-                                    placeholder: 'Name',
-                                    className: 'modal-input'
-                                }
+                                    onClick: () => { setShowNewProfileModal(false); setNewProfileName(''); },
+                                    className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200'
+                                },
+                                'Cancel'
                             ),
                             React.createElement(
-                                'div',
-                                { className: 'flex gap-3 text-sm' },
-                                React.createElement(
-                                    'button',
-                                    {
-                                        onClick: () => { setShowNewProfileModal(false); setNewProfileName(''); },
-                                        className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200'
-                                    },
-                                    'Cancel'
-                                ),
-                                React.createElement(
-                                    'button',
-                                    {
-                                        onClick: createProfile,
-                                        className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-purple-500 to-indigo-600'
-                                    },
-                                    'Create'
-                                )
+                                'button',
+                                {
+                                    onClick: createProfile,
+                                    className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-purple-500 to-indigo-600'
+                                },
+                                'Create'
                             )
                         )
-                    ),
+                    )
+                ),
 
-                    // Category Edit Modal
-                    showCategoryEdit && editingCategory && React.createElement(
+                // Category Edit Modal
+                showCategoryEdit && editingCategory && React.createElement(
+                    'div',
+                    { className: 'fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50' },
+                    React.createElement(
                         'div',
-                        { className: 'fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50' },
+                        { className: 'glass-effect rounded-xl p-6 max-w-sm w-full' },
+                        React.createElement('h3', { className: 'text-lg font-bold text-gray-900 mb-4' }, `✎ Rename "${editingCategory}"`),
+                        React.createElement(
+                            'input',
+                            {
+                                type: 'text',
+                                value: editingCategoryNewName,
+                                onChange: (e) => setEditingCategoryNewName(e.target.value),
+                                onKeyPress: (e) => e.key === 'Enter' && renameCategory(editingCategory, editingCategoryNewName),
+                                placeholder: 'New name',
+                                autoFocus: true,
+                                className: 'modal-input'
+                            }
+                        ),
                         React.createElement(
                             'div',
-                            { className: 'glass-effect rounded-xl p-6 max-w-sm w-full' },
-                            React.createElement('h3', { className: 'text-lg font-bold text-gray-900 mb-4' }, `✎ Rename "${editingCategory}"`),
+                            { className: 'flex gap-3 text-sm' },
                             React.createElement(
-                                'input',
+                                'button',
                                 {
-                                    type: 'text',
-                                    value: editingCategoryNewName,
-                                    onChange: (e) => setEditingCategoryNewName(e.target.value),
-                                    onKeyPress: (e) => e.key === 'Enter' && renameCategory(editingCategory, editingCategoryNewName),
-                                    placeholder: 'New name',
-                                    autoFocus: true,
-                                    className: 'modal-input'
-                                }
+                                    onClick: () => { setShowCategoryEdit(false); setEditingCategory(null); setEditingCategoryNewName(''); },
+                                    className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200'
+                                },
+                                'Cancel'
                             ),
                             React.createElement(
-                                'div',
-                                { className: 'flex gap-3 text-sm' },
-                                React.createElement(
-                                    'button',
-                                    {
-                                        onClick: () => { setShowCategoryEdit(false); setEditingCategory(null); setEditingCategoryNewName(''); },
-                                        className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200'
-                                    },
-                                    'Cancel'
-                                ),
-                                React.createElement(
-                                    'button',
-                                    {
-                                        onClick: () => renameCategory(editingCategory, editingCategoryNewName),
-                                        className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-purple-500 to-indigo-600'
-                                    },
-                                    'Rename'
-                                )
+                                'button',
+                                {
+                                    onClick: () => renameCategory(editingCategory, editingCategoryNewName),
+                                    className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-purple-500 to-indigo-600'
+                                },
+                                'Rename'
                             )
                         )
-                    ),
+                    )
+                ),
 
-                    // Category Delete Modal
-                    showDeleteCategoryModal && categoryToDelete && React.createElement(
+                // Category Delete Modal
+                showDeleteCategoryModal && categoryToDelete && React.createElement(
+                    'div',
+                    { className: 'fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50' },
+                    React.createElement(
                         'div',
-                        { className: 'fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50' },
+                        { className: 'glass-effect rounded-xl p-6 max-w-sm w-full' },
+                        React.createElement('h3', { className: 'text-lg font-bold text-gray-900 mb-4' }, `Delete "${categoryToDelete}"?`),
+                        React.createElement('div', { className: 'text-sm text-gray-600 mb-4' }, 
+                            `${profiles[currentProfile]?.logs?.filter(log => log.category === categoryToDelete).length || 0} entries use this category.`
+                        ),
                         React.createElement(
                             'div',
-                            { className: 'glass-effect rounded-xl p-6 max-w-sm w-full' },
-                            React.createElement('h3', { className: 'text-lg font-bold text-gray-900 mb-4' }, `Delete "${categoryToDelete}"?`),
-                            React.createElement('div', { className: 'text-sm text-gray-600 mb-4' },
-                                `${profiles[currentProfile]?.logs?.filter(log => log.category === categoryToDelete).length || 0} entries use this category.`
-                            ),
+                            { className: 'space-y-3 mb-4' },
                             React.createElement(
-                                'div',
-                                { className: 'space-y-3 mb-4' },
-                                React.createElement(
-                                    'label',
-                                    { className: 'flex items-start gap-3 cursor-pointer p-2 rounded hover:bg-gray-100' },
-                                    React.createElement('input', { type: 'radio', name: 'action', checked: deleteCategoryAction === 'move', onChange: () => setDeleteCategoryAction('move') }),
-                                    React.createElement('div', null,
-                                        React.createElement('div', { className: 'font-semibold text-sm' }, 'Move to category'),
-                                        deleteCategoryAction === 'move' && React.createElement(
-                                            'select',
-                                            {
-                                                value: moveToCategory,
-                                                onChange: (e) => setMoveToCategory(e.target.value),
-                                                className: 'w-full mt-2 p-2 border rounded text-sm'
-                                            },
-                                            React.createElement('option', { value: '' }, 'Select category...'),
-                                            categories.filter(c => c !== categoryToDelete).map(cat =>
-                                                React.createElement('option', { key: cat, value: cat }, cat)
-                                            )
+                                'label',
+                                { className: 'flex items-start gap-3 cursor-pointer p-2 rounded hover:bg-gray-100' },
+                                React.createElement('input', { type: 'radio', name: 'action', checked: deleteCategoryAction === 'move', onChange: () => setDeleteCategoryAction('move') }),
+                                React.createElement('div', null,
+                                    React.createElement('div', { className: 'font-semibold text-sm' }, 'Move to category'),
+                                    deleteCategoryAction === 'move' && React.createElement(
+                                        'select',
+                                        {
+                                            value: moveToCategory,
+                                            onChange: (e) => setMoveToCategory(e.target.value),
+                                            className: 'w-full mt-2 p-2 border rounded text-sm'
+                                        },
+                                        React.createElement('option', { value: '' }, 'Select category...'),
+                                        categories.filter(c => c !== categoryToDelete).map(cat =>
+                                            React.createElement('option', { key: cat, value: cat }, cat)
                                         )
                                     )
-                                ),
-                                React.createElement(
-                                    'label',
-                                    { className: 'flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-100' },
-                                    React.createElement('input', { type: 'radio', name: 'action', checked: deleteCategoryAction === 'uncategorized', onChange: () => setDeleteCategoryAction('uncategorized') }),
-                                    React.createElement('div', { className: 'font-semibold text-sm' }, 'Keep as "Uncategorized"')
-                                ),
-                                React.createElement(
-                                    'label',
-                                    { className: 'flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-100' },
-                                    React.createElement('input', { type: 'radio', name: 'action', checked: deleteCategoryAction === 'delete', onChange: () => setDeleteCategoryAction('delete') }),
-                                    React.createElement('div', { className: 'font-semibold text-sm text-red-600' }, 'Delete all entries in this category')
                                 )
                             ),
                             React.createElement(
-                                'div',
-                                { className: 'flex gap-3 text-sm' },
-                                React.createElement(
-                                    'button',
-                                    {
-                                        onClick: () => { setShowDeleteCategoryModal(false); setCategoryToDelete(null); },
-                                        className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200'
-                                    },
-                                    'Cancel'
-                                ),
-                                React.createElement(
-                                    'button',
-                                    {
-                                        onClick: deleteCategory,
-                                        disabled: deleteCategoryAction === 'move' && !moveToCategory,
-                                        className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-white bg-red-500 hover:bg-red-600 disabled:opacity-50'
-                                    },
-                                    'Delete'
-                                )
+                                'label',
+                                { className: 'flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-100' },
+                                React.createElement('input', { type: 'radio', name: 'action', checked: deleteCategoryAction === 'uncategorized', onChange: () => setDeleteCategoryAction('uncategorized') }),
+                                React.createElement('div', { className: 'font-semibold text-sm' }, 'Keep as "Uncategorized"')
+                            ),
+                            React.createElement(
+                                'label',
+                                { className: 'flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-100' },
+                                React.createElement('input', { type: 'radio', name: 'action', checked: deleteCategoryAction === 'delete', onChange: () => setDeleteCategoryAction('delete') }),
+                                React.createElement('div', { className: 'font-semibold text-sm text-red-600' }, 'Delete all entries in this category')
+                            )
+                        ),
+                        React.createElement(
+                            'div',
+                            { className: 'flex gap-3 text-sm' },
+                            React.createElement(
+                                'button',
+                                {
+                                    onClick: () => { setShowDeleteCategoryModal(false); setCategoryToDelete(null); },
+                                    className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200'
+                                },
+                                'Cancel'
+                            ),
+                            React.createElement(
+                                'button',
+                                {
+                                    onClick: deleteCategory,
+                                    disabled: deleteCategoryAction === 'move' && !moveToCategory,
+                                    className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-white bg-red-500 hover:bg-red-600 disabled:opacity-50'
+                                },
+                                'Delete'
                             )
                         )
-                    ),
+                    )
+                ),
 
-                    toast && React.createElement('div', { className: 'toast' }, toast)
-                );
-            };
+                // Import Modal
+                showImportModal && React.createElement(
+                    'div',
+                    { className: 'fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50' },
+                    React.createElement(
+                        'div',
+                        { className: 'glass-effect rounded-xl p-6 max-w-sm w-full' },
+                        React.createElement('h3', { className: 'text-lg font-bold text-gray-900 mb-4' }, '📥 Import Transaction Log'),
+                        React.createElement('p', { className: 'text-sm text-gray-600 mb-4' }, 'Select a CSV or JSON file to import transaction entries'),
+                        React.createElement(
+                            'input',
+                            {
+                                type: 'file',
+                                accept: '.csv,.json',
+                                onChange: handleImportFile,
+                                className: 'w-full p-2 border-2 border-dashed rounded-lg cursor-pointer text-sm'
+                            }
+                        ),
+                        React.createElement(
+                            'div',
+                            { className: 'flex gap-3 text-sm mt-4' },
+                            React.createElement(
+                                'button',
+                                {
+                                    onClick: () => setShowImportModal(false),
+                                    className: 'flex-1 px-4 py-2 rounded-lg font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200'
+                                },
+                                'Cancel'
+                            )
+                        )
+                    )
+                ),
 
-            ReactDOM.render(React.createElement(CashCounter), document.getElementById('root'));
-        </script>
-    </body>
+                toast && React.createElement('div', { className: 'toast' }, toast)
+            );
+        };
 
+        ReactDOM.render(React.createElement(CashCounter), document.getElementById('root'));
+    </script>
+</body>
 </html>
